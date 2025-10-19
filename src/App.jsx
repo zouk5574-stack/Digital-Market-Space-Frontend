@@ -35,7 +35,7 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
   if (loading) return <Loader />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  // Si l'utilisateur n'a pas le bon rôle → on bloque
+  // Vérifie si le rôle de l'utilisateur est autorisé
   if (!allowedRoles.includes(user?.role)) {
     return <Navigate to="/" replace />;
   }
@@ -53,7 +53,7 @@ const AppRoutes = () => (
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
 
-    {/* Routes protégées par rôle */}
+    {/* Dashboards protégés par rôle */}
     <Route
       path="/admin/dashboard"
       element={
@@ -79,7 +79,7 @@ const AppRoutes = () => (
       }
     />
 
-    {/* Fallback */}
+    {/* Fallback pour toutes les autres routes */}
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );
