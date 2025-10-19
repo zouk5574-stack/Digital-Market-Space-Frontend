@@ -1,101 +1,99 @@
-// src/contexts/AuthContext.js
-import React, { createContext, useEffect, useState } from "react";
-import api from "../services/api";
-import toast from "react-hot-toast";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { api } from '../services/api';
 
-export const AuthContext = createContext({
-  user: null,
-  token: null,
-  login: async () => {},
-  logout: () => {},
-  isAuthenticated: false,
-  isLoading: true
-});
+const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem("dms_token") || null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Charger l’utilisateur s’il y a un token
   useEffect(() => {
-    // Attach token to axios default headers
     if (token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } else {
-      delete api.defaults.headers.common["Authorization"];
+      api.setToken(token);
+      fetchUserProfile();
     }
   }, [token]);
 
-  useEffect(() => {
-    // On mount, if token exists try to fetch profile
-    async function fetchProfile() {
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-      try {
-        const resp = await api.get("/auth/me");
-        setUser(resp.data.user || resp.data);
-      } catch (err) {
-        console.error("Auth: failed to fetch profile", err);
-        // token invalid -> logout
-        setToken(null);
-        localStorage.removeItem("dms_token");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchProfile();
-  }, [token]);
-
-  async function login({ identifier, password }) {
-    // identifier can be phone/email/username depending on backend
+  const fetchUserProfile = async () => {
     try {
-      const resp = await api.post("/auth/login", { phoneOrEmailOrUsername: identifier, password });
-      const t = resp.data.token || resp.data.accessToken || resp.data?.data?.token;
-      const u = resp.data.user || resp.data?.user || resp.data?.data?.user;
-      if (!t) {
-        throw new Error("Aucun token reçu du serveur.");
-      }
-      setToken(t);
-      localStorage.setItem("dms_token", t);
-      api.defaults.headers.common["Authorization"] = `Bearer ${t}`;
-      if (u) setUser(u);
-      toast.success("Connecté !");
-      return { success: true, user: u };
-    } catch (err) {
-      const msg = err?.response?.data?.message || err.message || "Échec de la connexion";
-      toast.error(msg);
-      return { success: false, error: msg };
+      const { data } = await api.get('/users/me');
+      setUser(data);
+    } catch {
+      logout();
     }
-  }
+  };
 
-  function logout() {
+  const login = async (identifier, password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await api.post('/auth/login', { identifier, password });
+      localStorage.setItem('token', data.token);
+      api.setToken(data.token);
+      setToken(data.token);
+      setUser(data.user);
+      return { success: true };
+    } catch (err) {
+      setError(err.response?.data?.message || 'Échec de la connexion');
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const superAdminLogin = async (firstname, lastname, phone, adminPassword) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await api.post('/auth/superadmin-login', {
+        firstname, lastname, phone, adminPassword
+      });
+      localStorage.setItem('token', data.token);
+      api.setToken(data.token);
+      setToken(data.token);
+      setUser(data.user);
+      return { success: true };
+    } catch (err) {
+      setError(err.response?.data?.message || 'Connexion admin échouée');
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (formData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.post('/auth/register', formData);
+      return { success: true };
+    } catch (err) {
+      setError(err.response?.data?.message || 'Échec de l’inscription');
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
     setUser(null);
     setToken(null);
-    localStorage.removeItem("dms_token");
-    delete api.defaults.headers.common["Authorization"];
-    // optional: call backend logout
-    try {
-      api.post("/auth/logout").catch(() => {});
-    } catch {}
-    toast.success("Déconnecté");
-    // redirect handled by consumer
-  }
+    api.setToken(null);
+  };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-        setUser
-      }}
-    >
+    <AuthContext.Provider value={{
+      user, token, loading, error,
+      login, register, superAdminLogin,
+      logout, isAuthenticated: !!user
+    }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+export const useAuthContext = () => useContext(AuthContext);
