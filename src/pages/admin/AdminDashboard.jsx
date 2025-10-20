@@ -60,6 +60,7 @@ const AdminDashboard = () => {
     try {
       await withdrawalActions.approveWithdrawal(withdrawalId);
       adminActions.listWithdrawals();
+      walletActions.getBalance();
     } catch (error) {
       console.error('Erreur approbation retrait:', error);
     }
