@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
+import { useProductsApi } from '../../hooks/useApi';
 
-/**
- * ProductModal
- * @param {boolean} isOpen - Si le modal est ouvert
- * @param {function} onClose - Fermer le modal
- * @param {function} onSave - Callback pour créer ou modifier le produit
- * @param {object} product - Produit existant pour édition (optionnel)
- */
-const ProductModal = ({ isOpen, onClose, onSave, product = null }) => {
+const ProductModal = ({ isOpen, onClose, product = null }) => {
+  const { actions: productActions } = useProductsApi();
+
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -37,10 +33,15 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null }) => {
 
     setSaving(true);
     try {
-      await onSave({ name, description, price: Number(price), category });
+      if (product) {
+        await productActions.updateProduct(product.id, { name, description, price: Number(price), category });
+      } else {
+        await productActions.createProduct({ name, description, price: Number(price), category });
+      }
+      await productActions.getMyProducts(); // rafraîchit la liste
       onClose();
-    } catch (error) {
-      console.error('Erreur sauvegarde produit:', error);
+    } catch (err) {
+      console.error('Erreur sauvegarde produit:', err);
       alert('Impossible de sauvegarder le produit.');
     } finally {
       setSaving(false);
@@ -55,7 +56,6 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null }) => {
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           {product ? 'Modifier Produit' : 'Ajouter Nouveau Produit'}
         </h2>
-
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nom*</label>
@@ -66,7 +66,6 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null }) => {
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
@@ -76,7 +75,6 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null }) => {
               rows={3}
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Prix (XOF)*</label>
             <input
@@ -86,7 +84,6 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null }) => {
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
             <input
@@ -97,11 +94,8 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null }) => {
             />
           </div>
         </div>
-
         <div className="mt-6 flex justify-end space-x-3">
-          <Button variant="secondary" onClick={onClose} disabled={saving}>
-            Annuler
-          </Button>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Annuler</Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
             {saving ? 'Sauvegarde...' : 'Enregistrer'}
           </Button>
