@@ -28,7 +28,7 @@ const HomePage = () => {
             className="flex flex-col items-center justify-center"
           >
             <img
-              src="/logo.png" // 🖼️ Place ton logo dans /public/logo.png
+              src="/Friendly E-commerce Logo with Light Grey_20250920_172930_0000.png" // 🖼️ Place ton logo dans /public/logo.png
               alt="Digital Market Space Logo"
               className="w-32 h-32 mb-4 animate-pulse"
             />
