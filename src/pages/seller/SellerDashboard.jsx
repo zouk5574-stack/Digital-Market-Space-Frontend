@@ -1,6 +1,6 @@
 // src/pages/seller/SellerDashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { useStatsApi, useProductsApi, useOrdersApi, useFreelanceApi } from '../../hooks/useApi';
+import { useStatsApi, useProductsApi, useOrdersApi, useFreelanceApi, useWithdrawalsApi } from '../../hooks/useApi';
 import Button from '../../components/ui/Button';
 import StatsCard from '../../components/dashboard/StatsCard';
 import DataTable from '../../components/dashboard/DataTable';
@@ -9,6 +9,7 @@ import ErrorModal from '../../components/modals/ErrorModal';
 import DeleteConfirmModal from '../../components/modals/DeleteConfirmModal';
 import TransactionDetailsModal from '../../components/modals/TransactionDetailsModal';
 import ServiceModal from '../../components/modals/ServiceModal';
+import WithdrawalModal from '../../components/admin/WithdrawalModal';
 
 const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -19,11 +20,13 @@ const SellerDashboard = () => {
   const [deleteModal, setDeleteModal] = useState({ open: false, item: null, onConfirm: null });
   const [transactionModal, setTransactionModal] = useState({ open: false, transactionId: null });
   const [serviceModal, setServiceModal] = useState({ open: false, service: null });
+  const [withdrawalModal, setWithdrawalModal] = useState({ open: false, walletBalance: 0 });
 
   const { actions: statsActions, states: statsStates } = useStatsApi();
   const { actions: productActions, states: productStates } = useProductsApi();
   const { actions: ordersActions, states: ordersStates } = useOrdersApi();
   const { actions: freelanceActions, states: freelanceStates } = useFreelanceApi();
+  const { actions: withdrawalActions } = useWithdrawalsApi();
 
   useEffect(() => {
     statsActions.getUserStats();
@@ -37,7 +40,6 @@ const SellerDashboard = () => {
   const sales = ordersStates.sales.data || [];
   const applications = freelanceStates.applications.data || [];
 
-  // Applications groupées par statut
   const pendingApplications = applications.filter(app => app.mission?.status === 'open' || app.mission?.status === 'pending_payment');
   const activeMissions = applications.filter(app => app.mission?.status === 'in_progress');
   const completedMissions = applications.filter(app => app.mission?.status === 'completed' || app.mission?.status === 'awaiting_validation');
@@ -76,6 +78,12 @@ const SellerDashboard = () => {
               <Button variant="secondary" onClick={() => setInfoModal({ open: true, message: 'Section Missions bientôt disponible' })}>
                 Voir Missions
               </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setWithdrawalModal({ open: true, walletBalance: stats.totalSellerEarnings || 0 })}
+              >
+                Demander Retrait
+              </Button>
             </div>
           </div>
 
@@ -113,6 +121,7 @@ const SellerDashboard = () => {
               <StatsCard title="Produits Actifs" value={products.length} icon="📦" color="blue" />
               <StatsCard title="Ventes Total" value={stats.salesCount} icon="💰" color="green" />
               <StatsCard title="Gains Nets" value={`${stats.totalSellerEarnings || '0'} XOF`} icon="🎯" color="purple" />
+              <StatsCard title="Solde Retrait Disponible" value={`${stats.totalSellerEarnings || '0'} XOF`} icon="🏦" color="indigo" description="Vous pouvez demander un retrait de ce montant" />
               <StatsCard title="Missions Actives" value={activeMissions.length} icon="⚡" color="orange" />
               <StatsCard title="Candidatures" value={applications.length} icon="📝" color="yellow" />
               <StatsCard title="Missions Terminées" value={completedMissions.length} icon="✅" color="green" />
@@ -197,6 +206,7 @@ const SellerDashboard = () => {
       <DeleteConfirmModal isOpen={deleteModal.open} onClose={() => setDeleteModal({ open: false, item: null, onConfirm: null })} onConfirm={deleteModal.onConfirm} item={deleteModal.item} />
       <TransactionDetailsModal isOpen={transactionModal.open} onClose={() => setTransactionModal({ open: false, transactionId: null })} transactionId={transactionModal.transactionId} />
       <ServiceModal isOpen={serviceModal.open} onClose={() => setServiceModal({ open: false, service: null })} service={serviceModal.service} />
+      <WithdrawalModal isOpen={withdrawalModal.open} onClose={() => setWithdrawalModal({ open: false, walletBalance: 0 })} walletBalance={withdrawalModal.walletBalance} />
     </div>
   );
 };
