@@ -206,7 +206,17 @@ const SellerDashboard = () => {
       <DeleteConfirmModal isOpen={deleteModal.open} onClose={() => setDeleteModal({ open: false, item: null, onConfirm: null })} onConfirm={deleteModal.onConfirm} item={deleteModal.item} />
       <TransactionDetailsModal isOpen={transactionModal.open} onClose={() => setTransactionModal({ open: false, transactionId: null })} transactionId={transactionModal.transactionId} />
       <ServiceModal isOpen={serviceModal.open} onClose={() => setServiceModal({ open: false, service: null })} service={serviceModal.service} />
-      <WithdrawalModal isOpen={withdrawalModal.open} onClose={() => setWithdrawalModal({ open: false, walletBalance: 0 })} walletBalance={withdrawalModal.walletBalance} />
+      <WithdrawalModal
+        isOpen={withdrawalModal.open}
+        onClose={() => setWithdrawalModal({ open: false, walletBalance: 0 })}
+        walletBalance={withdrawalModal.walletBalance}
+        onWithdrawalSuccess={(amount) => {
+          // Mettre à jour le solde local après retrait
+          const newBalance = (stats.totalSellerEarnings || 0) - amount;
+          stats.totalSellerEarnings = newBalance;
+          setWithdrawalModal({ open: false, walletBalance: newBalance });
+        }}
+      />
     </div>
   );
 };
