@@ -4,10 +4,10 @@ import { useStatsApi, useProductsApi, useOrdersApi, useFreelanceApi, useWithdraw
 import Button from '../../components/ui/Button';
 import StatsCard from '../../components/dashboard/StatsCard';
 import DataTable from '../../components/dashboard/DataTable';
-import InfoModal from '../../components/modals/InfoModal';
-import ErrorModal from '../../components/modals/ErrorModal';
-import DeleteConfirmModal from '../../components/modals/DeleteConfirmModal';
-import TransactionDetailsModal from '../../components/modals/TransactionDetailsModal';
+import InfoModal from '../../components/ui/InfoModal';
+import ErrorModal from '../../components/ui/ErrorModal';
+import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
+import TransactionDetailsModal from '../../components/admin/TransactionDetailsModal';
 import ServiceModal from '../../components/modals/ServiceModal';
 import WithdrawalModal from '../../components/admin/WithdrawalModal';
 
