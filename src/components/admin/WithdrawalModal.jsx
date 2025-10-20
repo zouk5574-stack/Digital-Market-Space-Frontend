@@ -3,7 +3,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { useWithdrawalsApi } from '../../hooks/useApi';
 
-const WithdrawalModal = ({ isOpen, onClose, walletBalance }) => {
+const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }) => {
   const { actions: withdrawalActions } = useWithdrawalsApi();
 
   const [formData, setFormData] = useState({
@@ -15,15 +15,20 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.amount || formData.amount > walletBalance) return;
+    const amountNumber = Number(formData.amount);
+    if (!amountNumber || amountNumber > walletBalance) return;
 
     setLoading(true);
     try {
       await withdrawalActions.createWithdrawal({
-        amount: Number(formData.amount),
+        amount: amountNumber,
         provider_id: formData.provider_id,
         account_number: formData.account_number
       });
+
+      // Mise à jour immédiate du solde dans le dashboard
+      if (onWithdrawalSuccess) onWithdrawalSuccess(amountNumber);
+
       onClose();
     } catch (err) {
       console.error('Erreur retrait:', err);
