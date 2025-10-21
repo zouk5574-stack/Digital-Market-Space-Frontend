@@ -1,24 +1,14 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
-import App from "./App";
-import { AuthProvider } from "./contexts/AuthContext";
+// src/main.jsx ou src/index.jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App.jsx';
 
-// Importation des styles globaux
-import "./styles/globals.css";
-import "./App.css";
-
-const container = document.getElementById("root");
-const root = createRoot(container);
-
-root.render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider>
-      <BrowserRouter>
-        <App />
-        <Toaster position="top-right" reverseOrder={false} />
-      </BrowserRouter>
-    </AuthProvider>
-  </React.StrictMode>
+    {/* PREMIER ROUTER (CECI EST CORRECT) */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
 );

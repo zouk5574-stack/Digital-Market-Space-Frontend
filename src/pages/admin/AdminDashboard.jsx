@@ -22,10 +22,10 @@ import FedapayConfigModal from '../../components/admin/FedapayConfigModal';
 import CommissionSettingsModal from '../../components/admin/CommissionSettingsModal';
 import InfoModal from '../../components/ui/InfoModal';
 import ErrorModal from '../../components/ui/ErrorModal';
-import PlatformSettingsModal from '../../components/admin/PlatformSettingsModal';
+import PlatformSettingsModal from '../../components/admin/PlateformSettingsModal';
 import TransactionDetailsModal from '../../components/admin/TransactionDetailsModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
-import ServiceModal from '../../components/admin/ServiceModal';
+import ServiceModal from '../../components/modals/ServiceModal';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');

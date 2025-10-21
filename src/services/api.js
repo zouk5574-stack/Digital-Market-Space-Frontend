@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Configuration de base
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 // Instance Axios configurée
 const api = axios.create({

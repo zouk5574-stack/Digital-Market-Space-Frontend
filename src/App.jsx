@@ -49,8 +49,8 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
 const AppRoutes = () => (
   <Routes>
     {/* Routes publiques */}
-    <Route path="/" element={<HomePage />} />
-    <Route path="/login" element={<LoginPage />} />
+    <Route path="/home" element={<HomePage />} />
+    <Route path="/" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
 
     {/* Dashboards protégés par rôle */}

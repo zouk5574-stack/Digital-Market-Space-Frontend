@@ -1,29 +1,23 @@
-// src/hooks/useApi.js - VERSION COMPLÈTE ET UNIFIÉE
 import { useState, useEffect, useCallback } from 'react';
 import { 
   authAPI, 
-  adminAPI, 
-  walletAPI, 
-  fedapayAPI, 
-  filesAPI, 
-  freelanceAPI, 
-  ordersAPI, 
-  notificationsAPI, 
-  aiAssistantAPI, 
-  productsAPI, 
-  statsAPI, 
-  paymentProvidersAPI 
-} from '../services/api';
+  adminAPI,
+} from '../services/api'; // Assurez-vous que api.js exporte bien tous ces objets nommément
 
 /**
  * Hook personnalisé principal pour gérer les appels API avec états de loading, error et data
+ * @param {function} apiCall - La fonction de l'API à exécuter (ex: authAPI.login)
+ * @param {any} initialData - La valeur initiale pour les données
+ * @param {boolean} immediate - Si l'appel doit être exécuté immédiatement au montage
+ * @param {function} transform - Fonction optionnelle pour transformer ou extraire les données de response.data (ex: (data) => data.user)
  */
-const useApi = (apiCall, initialData = null, immediate = false) => {
+const useApi = (apiCall, initialData = null, immediate = false, transform = (data) => data) => {
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(immediate);
   const [error, setError] = useState(null);
   const [executed, setExecuted] = useState(false);
 
+  // La fonction d'exécution de l'appel API
   const execute = useCallback(async (...args) => {
     setLoading(true);
     setError(null);
@@ -31,35 +25,28 @@ const useApi = (apiCall, initialData = null, immediate = false) => {
     try {
       const response = await apiCall(...args);
       
-      // Extraction intelligente des données selon la structure du backend
-      const responseData = response.data.user || response.data.wallet || 
-                          response.data.withdrawals || response.data.transactions || 
-                          response.data.conversations || response.data.stats || 
-                          response.data.notifications || response.data.orders ||
-                          response.data.missions || response.data.applications ||
-                          response.data.products || response.data.logs ||
-                          response.data.providers || response.data.file || 
-                          response.data.url || response.data.message ||
-                          response.data.fedapay || response.data.checkout_url ||
-                          response.data;
+      // Utilisation de la fonction transform pour gérer l'extraction des données
+      const responseData = transform(response.data); 
       
       setData(responseData);
       setExecuted(true);
       return responseData;
     } catch (err) {
       const errorMessage = err.response?.data?.error || 
-                          err.response?.data?.details || 
-                          err.message || 
-                          'Une erreur est survenue';
+                           err.response?.data?.details || 
+                           err.message || 
+                           'Une erreur est survenue';
       
       setError(errorMessage);
       setExecuted(true);
-      throw err;
+      // Renvoyer l'erreur pour permettre aux composants appelants de la gérer
+      throw err; 
     } finally {
       setLoading(false);
     }
-  }, [apiCall]);
+  }, [apiCall, transform]); // 'transform' ajouté aux dépendances
 
+  // Exécute l'appel immédiatement si 'immediate' est true
   useEffect(() => {
     if (immediate) {
       execute();
@@ -80,7 +67,7 @@ const useApi = (apiCall, initialData = null, immediate = false) => {
     executed,
     execute,
     reset,
-    setData,
+    setData, // Utile pour mettre à jour les données localement
   };
 };
 
@@ -91,11 +78,18 @@ const useApi = (apiCall, initialData = null, immediate = false) => {
 // 🔐 AUTHENTIFICATION
 export const useAuthApi = () => {
   const { execute: login, ...loginState } = useApi(
-    useCallback((credentials) => authAPI.login(credentials), [])
+    useCallback((credentials) => authAPI.login(credentials), []),
+    null,
+    false,
+    // Exemple d'utilisation du transform pour extraire l'utilisateur ou le token
+    (data) => ({ token: data.token, user: data.user }) 
   );
 
   const { execute: superAdminLogin, ...superAdminLoginState } = useApi(
-    useCallback((credentials) => authAPI.superAdminLogin(credentials), [])
+    useCallback((credentials) => authAPI.superAdminLogin(credentials), []),
+    null,
+    false,
+    (data) => ({ token: data.token, user: data.user }) 
   );
 
   const { execute: register, ...registerState } = useApi(
@@ -107,7 +101,10 @@ export const useAuthApi = () => {
   );
 
   const { execute: getProfile, ...profileState } = useApi(
-    useCallback(() => authAPI.getProfile(), [])
+    useCallback(() => authAPI.getProfile(), []),
+    null,
+    false,
+    (data) => data.user || data // Supposant que le profil retourne { user: {...} } ou {...}
   );
 
   return {
@@ -131,7 +128,10 @@ export const useAuthApi = () => {
 // 👑 ADMINISTRATION
 export const useAdminApi = () => {
   const { execute: listUsers, ...usersState } = useApi(
-    useCallback((params = {}) => adminAPI.users.list(params), [])
+    useCallback((params = {}) => adminAPI.users.list(params), []),
+    [],
+    false,
+    (data) => data.users || data // Supposant que le backend retourne { users: [...] }
   );
 
   const { execute: toggleUserStatus, ...toggleStatusState } = useApi(
@@ -195,11 +195,17 @@ export const useAdminApi = () => {
 // 💰 WALLET & RETRAITS
 export const useWalletApi = () => {
   const { execute: getBalance, ...balanceState } = useApi(
-    useCallback(() => walletAPI.getBalance(), [])
+    useCallback(() => walletAPI.getBalance(), []),
+    null,
+    false,
+    (data) => data.balance // Supposant que l'API retourne { balance: 123 }
   );
 
   const { execute: getTransactions, ...transactionsState } = useApi(
-    useCallback(() => walletAPI.getTransactions(), [])
+    useCallback(() => walletAPI.getTransactions(), []),
+    [],
+    false,
+    (data) => data.transactions || data
   );
 
   return {
