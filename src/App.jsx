@@ -8,6 +8,12 @@ import HomePage from './pages/auth/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
+//Pour plus de style 
+
+import './styles/Innovation.css';
+import './styles/Dashboard.css';
+import './styles/App.css';
+
 // Dashboards
 import AdminDashboard from './pages/admin/AdminDashboard';
 import SellerDashboard from './pages/seller/SellerDashboard';

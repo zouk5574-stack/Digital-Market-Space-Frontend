@@ -1,0 +1,933 @@
+/* ========================================= */
+/* 🚀 DIGITAL MARKET SPACE - STYLES UNIFIÉS */
+/* ========================================= */
+
+:root {
+    /* Couleurs du Thème Principal */
+    --color-primary: #004085;
+    --color-secondary: #007bff;
+    --color-accent: #FFD700;
+    --color-background: #F4F6F9;
+    --color-card-bg: #FFFFFF;
+    --color-text-dark: #212529;
+    --color-text-light: #6c757d;
+    --color-success: #28a745;
+    --color-warning: #ffc107;
+    --color-danger: #dc3545;
+
+    /* Couleurs Admin Spéciales */
+    --color-admin-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --color-admin-card: rgba(255, 255, 255, 0.95);
+    --color-admin-header: rgba(255, 255, 255, 0.1);
+
+    /* Effets et Ombres */
+    --shadow-subtle: 0 4px 8px rgba(0, 0, 0, 0.05);
+    --shadow-lift: 0 8px 16px rgba(0, 0, 0, 0.15);
+    --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
+
+    /* Animations */
+    --transition-smooth: all 0.3s ease;
+    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ========================================= */
+/* 🎯 RÉINITIALISATION ET STYLES DE BASE */
+/* ========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-text-dark);
+    line-height: 1.6;
+}
+
+.app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ========================================= */
+/* 👑 HEADER GLOBAL */
+/* ========================================= */
+
+.global-header {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-subtle);
+    position: relative;
+    overflow: hidden;
+}
+
+.global-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.header-content h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(45deg, #fff, var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-content p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+/* ========================================= */
+/* 🏗️ LAYOUT PRINCIPAL */
+/* ========================================= */
+
+.main-content {
+    flex: 1;
+    padding-top: 20px;
+}
+
+.majestic-layout {
+    padding: 30px;
+    min-height: calc(100vh - 120px);
+}
+
+.dashboard-header {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.dashboard-header h1 {
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    font-weight: 800;
+    margin: 0;
+}
+
+.subtitle {
+    color: var(--color-text-light);
+    font-style: italic;
+    font-size: 1.1rem;
+    margin: 0.5rem 0 0 0;
+}
+
+/* ========================================= */
+/* 👑 DASHBOARD ADMIN SPÉCIAL */
+/* ========================================= */
+
+.admin-dashboard {
+    background: var(--color-admin-gradient);
+    min-height: 100vh;
+}
+
+.admin-dashboard .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--color-admin-header);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(45deg, var(--color-accent), #FFA500);
+    padding: 0.7rem 1.2rem;
+    border-radius: 25px;
+    font-weight: 700;
+    color: #000;
+    box-shadow: var(--shadow-subtle);
+}
+
+/* Navigation par onglets Admin */
+.admin-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1.2rem 1.8rem;
+    background: var(--color-admin-header);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+    transition: var(--transition-bounce);
+    backdrop-filter: blur(10px);
+    font-weight: 600;
+}
+
+.tab-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.tab-button.active {
+    background: linear-gradient(45deg, var(--color-accent), #FFA500);
+    color: #000;
+    font-weight: 700;
+    transform: translateY(-2px);
+}
+
+/* Contenu des onglets Admin */
+.tab-content {
+    background: var(--color-admin-card);
+    border-radius: 20px;
+    padding: 2.5rem;
+    min-height: 500px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: var(--shadow-glass);
+}
+
+/* ========================================= */
+/* 🎴 SYSTÈME DE CARTES */
+/* ========================================= */
+
+.majestic-card {
+    background: var(--color-card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow-subtle);
+    padding: 2rem;
+    transition: var(--transition-bounce);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.majestic-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lift);
+}
+
+.glass-card {
+    background: var(--color-admin-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: var(--shadow-glass);
+    }
+/* ========================================= */
+/* 📊 GRILLES ET LAYOUTS */
+/* ========================================= */
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.adaptive-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+}
+
+/* ========================================= */
+/* 📈 COMPOSANTS DE STATISTIQUES */
+/* ========================================= */
+
+.stat-card {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-label {
+    color: var(--color-text-light);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.change-badge {
+    background: var(--color-success);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* ========================================= */
+/* 🎯 BOUTONS ET INTERACTIONS */
+/* ========================================= */
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-bounce);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--color-success), #20c997);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--color-danger), #e83e8c);
+    color: white;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--color-warning), #fd7e14);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+.btn-lg {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+}
+
+/* Boutons holographiques */
+.holographic-button {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+    background-size: 400% 400%;
+    animation: holographicShift 6s ease infinite;
+    border: none;
+    color: white;
+    font-weight: 700;
+    padding: 15px 30px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: var(--transition-bounce);
+    position: relative;
+    overflow: hidden;
+}
+
+.holographic-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.holographic-button:hover::before {
+    left: 100%;
+}
+
+.holographic-button:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 245, 255, 0.4);
+}
+
+@keyframes holographicShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+/* ========================================= */
+/* 📝 FORMULAIRES ET INPUTS */
+/* ========================================= */
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: var(--color-text-dark);
+    font-size: 1rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: var(--transition-smooth);
+    background: white;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-row input {
+    flex: 1;
+}
+
+/* ========================================= */
+// ... (le reste du code continue de la même manière)
+
+**Je vois que le code a été tronqué. Voici la suite complète :**
+
+```css
+/* ========================================= */
+/* 💰 SECTIONS FINANCIÈRES */
+/* ========================================= */
+
+.revenue-breakdown {
+    margin: 2rem 0;
+}
+
+.revenue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.revenue-item.total {
+    border-top: 3px solid var(--color-primary);
+    font-weight: 700;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+}
+
+.total-amount {
+    color: var(--color-success);
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.withdrawal-form {
+    margin-top: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 2px solid #eee;
+}
+
+/* ========================================= */
+/* 🔐 CONFIGURATION FEDAPAY */
+/* ========================================= */
+
+.key-fields {
+    display: grid;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.key-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.provider-status {
+    margin-top: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 2px solid #eee;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.status-active {
+    color: var(--color-success);
+    font-weight: 700;
+    background: #d4edda;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+}
+
+/* ========================================= */
+/* 👥 GESTION UTILISATEURS */
+/* ========================================= */
+
+.users-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #eee;
+}
+
+.users-stats {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    box-shadow: var(--shadow-subtle);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.super-admin-badge {
+    background: linear-gradient(45deg, var(--color-accent), #FFA500);
+    color: #000;
+    padding: 0.3rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    align-self: flex-start;
+}
+
+.role-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.role-admin { 
+    background: linear-gradient(135deg, var(--color-danger), #e83e8c);
+    color: white;
+}
+.role-vendeur { 
+    background: linear-gradient(135deg, var(--color-secondary), #0056b3);
+    color: white;
+}
+.role-acheteur { 
+    background: linear-gradient(135deg, var(--color-success), #20c997);
+    color: white;
+}
+
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    padding: 0.8rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.btn-icon.danger:hover {
+    background: var(--color-danger);
+    }
+/* ========================================= */
+/* ⚙️ PARAMÈTRES SYSTÈME */
+/* ========================================= */
+
+.setting-group {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    transition: var(--transition-smooth);
+}
+
+.setting-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+
+.setting-value {
+    font-weight: 700;
+    color: var(--color-primary);
+    font-size: 1.1rem;
+}
+
+.maintenance-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.system-info {
+    margin-top: 2.5rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    transition: var(--transition-smooth);
+}
+
+.info-item:hover {
+    background: #e9ecef;
+    transform: translateY(-3px);
+}
+
+.status-online {
+    color: var(--color-success);
+    font-weight: 700;
+    background: #d4edda;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+}
+
+/* ========================================= */
+// ... (le code continue)
+
+**Je vois que la réponse est encore trop longue. Voici la fin complète et finale :**
+
+```css
+/* ========================================= */
+/* 🎪 ANIMATIONS ET EFFETS */
+/* ========================================= */
+
+.floating-animation {
+    animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ========================================= */
+/* 🚨 ALERTES ET MESSAGES */
+/* ========================================= */
+
+.alert {
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.alert::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: currentColor;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: var(--color-success);
+    border-color: #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: var(--color-danger);
+    border-color: #f5c6cb;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: var(--color-warning);
+    border-color: #ffeeba;
+}
+
+/* ========================================= */
+/* 📊 TABLEAUX */
+/* ========================================= */
+
+.majestic-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-subtle);
+}
+
+.majestic-table th {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 1.2rem 1.5rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.majestic-table td {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #f8f9fa;
+    transition: var(--transition-smooth);
+}
+
+.majestic-table tr:hover td {
+    background: #f8f9fa;
+}
+
+/* ========================================= */
+/* 🏷️ BADGES DE STATUT */
+/* ========================================= */
+
+.status-badge {
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-open { 
+    background: #e3f2fd; 
+    color: #1976d2; 
+}
+.status-in_progress { 
+    background: #fff3e0; 
+    color: #f57c00; 
+}
+.status-awaiting_validation { 
+    background: #e8f5e8; 
+    color: #2e7d32; 
+}
+.status-completed { 
+    background: #e8f5e8; 
+    color: #2e7d32; 
+}
+.status-active { 
+    background: #d4edda; 
+    color: var(--color-success); 
+}
+.status-inactive { 
+    background: #f8d7da; 
+    color: var(--color-danger); 
+}
+
+/* ========================================= */
+/* 🔄 ÉTATS DE CHARGEMENT */
+/* ========================================= */
+
+.loading-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    font-size: 1.2rem;
+    color: var(--color-text-light);
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.loading-state::after {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* ========================================= */
+// ... (dernière partie)
+
+**Dernière partie du code CSS unifié :**
+
+```css
+/* ========================================= */
+/* 🎯 ACTIONS RAPIDES */
+/* ========================================= */
+
+.quick-actions {
+    margin-top: 2.5rem;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 2rem 1.5rem;
+    background: white;
+    border: none;
