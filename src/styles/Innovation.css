@@ -1,0 +1,217 @@
+/* ========================================= */
+/* 🚀 DESIGN SYSTEM INNOVANT - Digital Market Space */
+/* ========================================= */
+
+:root {
+  /* Couleurs avancées */
+  --color-neon-blue: #00f5ff;
+  --color-holographic: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+  --color-glass: rgba(255, 255, 255, 0.1);
+  --color-glass-dark: rgba(0, 0, 0, 0.2);
+
+  /* Effets modernes */
+  --shadow-holographic: 0 0 30px rgba(0, 245, 255, 0.3);
+  --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
+  --border-glass: 1px solid rgba(255, 255, 255, 0.18);
+
+  /* Animations */
+  --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ========================================= */
+/* 🎯 COMPOSANTS GLASSMORPHISM INNOVANTS */
+/* ========================================= */
+
+.glass-card {
+  background: var(--color-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: var(--border-glass);
+  border-radius: 20px;
+  box-shadow: var(--shadow-glass);
+  transition: var(--transition-smooth);
+}
+
+.glass-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-holographic);
+}
+
+.holographic-button {
+  background: var(--color-holographic);
+  background-size: 400% 400%;
+  animation: holographicShift 6s ease infinite;
+  border: none;
+  color: white;
+  font-weight: 700;
+  padding: 15px 30px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: var(--transition-bounce);
+  position: relative;
+  overflow: hidden;
+}
+
+.holographic-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.holographic-button:hover::before {
+  left: 100%;
+}
+
+.holographic-button:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 245, 255, 0.4);
+}
+
+@keyframes holographicShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ========================================= */
+/* 🎪 ANIMATIONS AVANCÉES */
+/* ========================================= */
+
+.floating-animation {
+  animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.particle-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.particle-effect::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, var(--color-neon-blue) 1%, transparent 1%);
+  background-size: 20px 20px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.particle-effect:hover::after {
+  opacity: 0.1;
+  animation: particleMove 0.5s linear;
+}
+
+@keyframes particleMove {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-100px) rotate(360deg); }
+}
+
+/* ========================================= */
+/* 📱 COMPOSANTS RESPONSIVES INTELLIGENTS */
+/* ========================================= */
+
+.adaptive-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+}
+
+.masonry-layout {
+  column-count: 3;
+  column-gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .masonry-layout { column-count: 2; }
+}
+
+@media (max-width: 768px) {
+  .masonry-layout { column-count: 1; }
+}
+
+/* ========================================= */
+/* 🎮 INTERACTIONS AVANCÉES */
+/* ========================================= */
+
+.morphing-card {
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+.morphing-card:active {
+  transform: scale(0.95) rotate(1deg);
+}
+
+.parallax-scroll {
+  transform-style: preserve-3d;
+}
+
+.parallax-layer {
+  transform: translateZ(0);
+  transition: transform 0.1s ease;
+}
+
+/* ========================================= */
+/* 🌐 DARK MODE INTELLIGENT */
+/* ========================================= */
+
+[data-theme="dark"] {
+  --color-primary: #bb86fc;
+  --color-background: #121212;
+  --color-card-bg: #1e1e1e;
+  --color-text-dark: #e0e0e0;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+/* ========================================= */
+/* 📊 DATA VISUALIZATION INNOVANTE */
+/* ========================================= */
+
+.live-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.data-sparkline {
+  height: 40px;
+  background: linear-gradient(90deg, var(--color-success) 0%, var(--color-warning) 50%, var(--color-danger) 100%);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.data-sparkline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--progress, 50%);
+  background: rgba(255,255,255,0.3);
+  animation: dataFlow 2s ease-in-out infinite;
+}
+
+@keyframes dataFlow {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+  }
