@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuthContext } from './contexts/AuthContext';
 
 // Pages publiques
@@ -21,7 +21,6 @@ import Loader from './components/ui/Loader';
 ============================ */
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuthContext();
-
   if (loading) return <Loader />;
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
@@ -35,9 +34,8 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
   if (loading) return <Loader />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  // Vérifie si le rôle de l'utilisateur est autorisé
   if (!allowedRoles.includes(user?.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;
@@ -48,12 +46,10 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
 ============================ */
 const AppRoutes = () => (
   <Routes>
-    {/* Routes publiques */}
-    <Route path="/home" element={<HomePage />} />
-    <Route path="/" element={<LoginPage />} />
+    <Route path="/" element={<HomePage />} />
+    <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
 
-    {/* Dashboards protégés par rôle */}
     <Route
       path="/admin/dashboard"
       element={
@@ -78,8 +74,6 @@ const AppRoutes = () => (
         </RoleProtectedRoute>
       }
     />
-
-    {/* Fallback pour toutes les autres routes */}
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );
@@ -89,9 +83,7 @@ const AppRoutes = () => (
 ============================ */
 const App = () => (
   <AuthProvider>
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <AppRoutes />
   </AuthProvider>
 );
 
