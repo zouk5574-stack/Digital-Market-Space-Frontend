@@ -1,26 +1,27 @@
 // src/App.jsx
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuthContext } from './contexts/AuthContext';
 
-// Pages publiques
+// ✅ UI globales
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import Loader from './components/ui/Loader';
+
+// ✅ Pages publiques
 import HomePage from './pages/auth/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
-//Pour plus de style 
-
-import './styles/Innovation.css';
-import './styles/Dashboard.css';
-import './styles/App.css';
-
-// Dashboards
+// ✅ Dashboards
 import AdminDashboard from './pages/admin/AdminDashboard';
 import SellerDashboard from './pages/seller/SellerDashboard';
 import BuyerDashboard from './pages/buyer/BuyerDashboard';
 
-// UI
-import Loader from './components/ui/Loader';
+// ✅ Styles globaux
+import './styles/Innovation.css';
+import './styles/Dashboard.css';
+import './styles/App.css';
 
 /* ============================
    🔒 Route privée standard
@@ -39,49 +40,69 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
 
   if (loading) return <Loader />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-
-  if (!allowedRoles.includes(user?.role)) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!allowedRoles.includes(user?.role)) return <Navigate to="/" replace />;
 
   return children;
+};
+
+/* ============================
+   🎨 Layout global
+============================ */
+const Layout = ({ children }) => {
+  const location = useLocation();
+  const noLayoutRoutes = ['/login', '/register'];
+
+  // ❌ Cache Navbar et Footer sur login/register
+  const hideLayout = noLayoutRoutes.includes(location.pathname);
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      {!hideLayout && <Navbar />}
+      <main className="flex-grow">{children}</main>
+      {!hideLayout && <Footer />}
+    </div>
+  );
 };
 
 /* ============================
    🧭 Routes principales
 ============================ */
 const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<HomePage />} />
-    <Route path="/login" element={<LoginPage />} />
-    <Route path="/register" element={<RegisterPage />} />
+  <Layout>
+    <Routes>
+      {/* Pages publiques */}
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-    <Route
-      path="/admin/dashboard"
-      element={
-        <RoleProtectedRoute allowedRoles={['admin', 'super_admin']}>
-          <AdminDashboard />
-        </RoleProtectedRoute>
-      }
-    />
-    <Route
-      path="/seller/dashboard"
-      element={
-        <RoleProtectedRoute allowedRoles={['seller', 'freelancer']}>
-          <SellerDashboard />
-        </RoleProtectedRoute>
-      }
-    />
-    <Route
-      path="/buyer/dashboard"
-      element={
-        <RoleProtectedRoute allowedRoles={['buyer']}>
-          <BuyerDashboard />
-        </RoleProtectedRoute>
-      }
-    />
-    <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes>
+      {/* Dashboards */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <RoleProtectedRoute allowedRoles={['admin', 'super_admin']}>
+            <AdminDashboard />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route
+        path="/seller/dashboard"
+        element={
+          <RoleProtectedRoute allowedRoles={['seller', 'freelancer']}>
+            <SellerDashboard />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route
+        path="/buyer/dashboard"
+        element={
+          <RoleProtectedRoute allowedRoles={['buyer']}>
+            <BuyerDashboard />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  </Layout>
 );
 
 /* ============================
