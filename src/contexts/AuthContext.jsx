@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async () => {
     try {
-      const { data } = await api.get('/users/me');
+      const { data } = await api.get('/auth/profile');
       setUser(data);
     } catch {
       logout();
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.post('/auth/superadmin-login', {
+      const { data } = await api.post('/auth/super-admin/login', {
         firstname, lastname, phone, adminPassword
       });
       localStorage.setItem('token', data.token);
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async() => {
     localStorage.removeItem('token');
     setUser(null);
     setToken(null);
