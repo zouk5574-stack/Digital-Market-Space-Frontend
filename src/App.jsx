@@ -71,8 +71,8 @@ const AppRoutes = () => (
   <Layout>
     <Routes>
       {/* Pages publiques */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<HomePage />} />
+      <Route path="/" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
       {/* Dashboards */}
