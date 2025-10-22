@@ -1,5 +1,5 @@
-// src/pages/admin/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
+import DashboardLayout from '../../layouts/DashboardLayout';
 import { 
   useAdminApi, 
   useStatsApi, 
@@ -11,21 +11,24 @@ import {
   useFreelanceApi 
 } from '../../hooks/useApi';
 
-import Button from '../../components/ui/Button';
 import Loader from '../../components/ui/Loader';
-import StatsCard from '../../components/dashboard/StatsCard';
-import DataTable from '../../components/dashboard/DataTable';
-
-import WithdrawalModal from '../../components/admin/WithdrawalModal';
 import ProductModal from '../../components/admin/ProductModal';
 import FedapayConfigModal from '../../components/admin/FedapayConfigModal';
 import CommissionSettingsModal from '../../components/admin/CommissionSettingsModal';
 import InfoModal from '../../components/ui/InfoModal';
 import ErrorModal from '../../components/ui/ErrorModal';
+import WithdrawalModal from '../../components/admin/WithdrawalModal';
 import PlatformSettingsModal from '../../components/admin/PlateformSettingsModal';
 import TransactionDetailsModal from '../../components/admin/TransactionDetailsModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import ServiceModal from '../../components/modals/ServiceModal';
+
+const menuItems = [
+  { name: 'Tableau de bord', path: '/admin/dashboard' },
+  { name: 'Utilisateurs', path: '/admin/users' },
+  { name: 'Produits', path: '/admin/products' },
+  { name: 'Commandes', path: '/admin/orders' },
+];
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -36,8 +39,8 @@ const AdminDashboard = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [showFedapayModal, setShowFedapayModal] = useState(false);
   const [showCommissionModal, setShowCommissionModal] = useState(false);
-  const [showInfoModal, setShowInfoModal] = useState({ open: false, message: '', title: '' });
-  const [showErrorModal, setShowErrorModal] = useState({ open: false, message: '', title: '' });
+  const [showInfoModal, setShowInfoModal] = useState({ open: false, title: '', message: '' });
+  const [showErrorModal, setShowErrorModal] = useState({ open: false, title: '', message: '' });
   const [showPlatformSettingsModal, setShowPlatformSettingsModal] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState({ open: false, transactionId: null });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState({ open: false, onConfirm: null, message: '' });
@@ -62,39 +65,6 @@ const AdminDashboard = () => {
     productActions.getMyProducts();
     paymentActions.getActiveProvider();
   }, []);
-
-  // ================= Gestion Utilisateurs =================
-  const handleToggleUserStatus = async (userId, currentStatus) => {
-    try {
-      await adminActions.toggleUserStatus(userId, !currentStatus);
-      adminActions.listUsers();
-    } catch (error) {
-      console.error(error);
-      setShowErrorModal({ open: true, title: 'Erreur', message: 'Impossible de changer le statut utilisateur' });
-    }
-  };
-
-  // ================= Gestion Retraits =================
-  const handleApproveWithdrawal = async (withdrawalId) => {
-    try {
-      await withdrawalActions.approveWithdrawal(withdrawalId);
-      adminActions.listWithdrawals();
-      walletActions.getBalance();
-    } catch (error) {
-      console.error(error);
-      setShowErrorModal({ open: true, title: 'Erreur', message: 'Impossible d’approuver le retrait' });
-    }
-  };
-
-  const handleRejectWithdrawal = async (withdrawalId, reason) => {
-    try {
-      await withdrawalActions.rejectWithdrawal(withdrawalId, reason);
-      adminActions.listWithdrawals();
-    } catch (error) {
-      console.error(error);
-      setShowErrorModal({ open: true, title: 'Erreur', message: 'Impossible de rejeter le retrait' });
-    }
-  };
 
   // ================= Gestion Produits =================
   const handleOpenProductModal = (product = null) => {
@@ -182,13 +152,11 @@ const AdminDashboard = () => {
   const paymentProvider = paymentStates.activeProvider.data?.provider || {};
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* === En-tête et Tabs === */}
-      {/* ... ton code d’en-tête et navigation onglets reste inchangé ... */}
-
-      {/* === Contenu principal === */}
-      {/* ... ton code contenu pour overview, users, withdrawals, products, settings ... */}
-
+    <DashboardLayout menuItems={menuItems}>
+      {/* === Ici tu peux ajouter ton contenu principal du dashboard === */}
+      <h1 className="text-2xl font-bold mb-6">Bienvenue sur le tableau admin</h1>
+      {/* Ex : Stats, Users, Produits, Retraits, etc. */}
+      
       {/* === Modals === */}
       <ProductModal
         isOpen={showProductModal}
@@ -252,10 +220,10 @@ const AdminDashboard = () => {
       <ServiceModal
         isOpen={showServiceModal.open}
         onClose={() => setShowServiceModal({ open: false, service: null })}
-        onSave={() => { /* tu peux rafraîchir la liste des services */ }}
+        onSave={() => { /* rafraîchir la liste des services si nécessaire */ }}
         service={showServiceModal.service}
       />
-    </div>
+    </DashboardLayout>
   );
 };
 
