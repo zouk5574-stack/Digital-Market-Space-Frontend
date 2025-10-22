@@ -40,7 +40,7 @@ const Footer = () => {
 
       {/* Bas de page */}
       <div className="bg-gray-800 py-4 text-center text-sm text-gray-400 border-t border-gray-700">
-        © {2025} Digital Market Space. Tous droits réservés.
+        © 2025 Digital Market Space. Tous droits réservés.
       </div>
     </footer>
   );
