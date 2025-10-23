@@ -20,7 +20,7 @@ const SellerDashboard = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null, onConfirm: null });
   const [productModal, setProductModal] = useState({ isOpen: false, product: null });
   const [serviceModal, setServiceModal] = useState({ isOpen: false, service: null });
-  const [withdrawalModal, setWithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
+  const [withdrawalModal, setwithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
 
   // Data
   const [stats, setStats] = useState({});
@@ -95,7 +95,7 @@ const SellerDashboard = () => {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => setWithdrawalModal({ isOpen: true, walletBalance: stats.totalSellerEarnings || 0 })}
+              onClick={() => setwithdrawalModal({ isOpen: true, walletBalance: stats.totalSellerEarnings || 0 })}
             >
               Retrait
             </Button>
@@ -207,7 +207,7 @@ const SellerDashboard = () => {
         onClose={() => setServiceModal({ isOpen: false, service: null })}
         service={serviceModal.service}
       />
-      <WithdrawalModal
+      <withdrawalModal
         isOpen={withdrawalModal.isOpen}
         onClose={() => setWithdrawalModal({ isOpen: false, walletBalance: 0 })}
         walletBalance={withdrawalModal.walletBalance}
