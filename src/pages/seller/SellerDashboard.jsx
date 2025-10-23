@@ -7,7 +7,7 @@ import InfoModal from '../../components/ui/InfoModal';
 import ErrorModal from '../../components/ui/ErrorModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import TransactionDetailsModal from '../../components/admin/TransactionDetailsModal';
-import ProductModal from '../../components/modals/ProductModal';
+import ProductModal from '../../components/admin/ProductModal';
 import ServiceModal from '../../components/modals/ServiceModal'; // ✅ ajouté
 import WithdrawalModal from '../../components/admin/WithdrawalModal';
 import { productsAPI, ordersAPI, freelanceAPI, withdrawalsAPI, statsAPI } from '../../services/api';
