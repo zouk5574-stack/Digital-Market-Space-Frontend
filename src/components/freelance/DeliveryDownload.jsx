@@ -94,7 +94,7 @@ const DeliveryDownload = ({ mission, delivery }) => {
             </h4>
             <p className="text-sm text-yellow-700 mb-3">
               <strong>Fonds en attente:</strong> {mission.final_price} XOF<br/>
-              Téléchargez et vérifiez le travail avant de valider.
+              Téléchargez et vérifiez le travail puis valider la réception car 🚨 la confirmation automatique pour intervenir en cas de votre oublie.
             </p>
             
             <Button
