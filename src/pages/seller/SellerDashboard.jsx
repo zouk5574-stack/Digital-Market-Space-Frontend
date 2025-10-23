@@ -8,7 +8,7 @@ import ErrorModal from '../../components/ui/ErrorModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import ProductModal from '../../components/admin/ProductModal';
 import ServiceModal from '../../components/modals/ServiceModal';
-import withdrawalModal from '../../components/admin/withdrawalModal';
+import WithdrawalModal from '../../components/admin/withdrawalModal';
 import { productsAPI, ordersAPI, freelanceAPI, statsAPI } from '../../services/api';
 
 const SellerDashboard = () => {
@@ -207,7 +207,7 @@ const SellerDashboard = () => {
         onClose={() => setServiceModal({ isOpen: false, service: null })}
         service={serviceModal.service}
       />
-      <withdrawalModal
+      <WithdrawalModal
         isOpen={withdrawalModal.isOpen}
         onClose={() => setWithdrawalModal({ isOpen: false, walletBalance: 0 })}
         walletBalance={withdrawalModal.walletBalance}
