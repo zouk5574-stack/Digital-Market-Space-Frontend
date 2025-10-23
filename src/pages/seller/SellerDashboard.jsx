@@ -8,21 +8,21 @@ import ErrorModal from '../../components/ui/ErrorModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import TransactionDetailsModal from '../../components/admin/TransactionDetailsModal';
 import ProductModal from '../../components/admin/ProductModal';
-import ServiceModal from '../../components/modals/ServiceModal'; // ✅ ajouté
+import ServiceModal from '../../components/modals/ServiceModal';
 import WithdrawalModal from '../../components/admin/WithdrawalModal';
-import { productsAPI, ordersAPI, freelanceAPI, withdrawalsAPI, statsAPI } from '../../services/api';
+import { productsAPI, ordersAPI, freelanceAPI, statsAPI } from '../../services/api';
 
 const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   // ----- Modals -----
-  const [infoModal, setInfoModal] = useState({ open: false, message: '' });
-  const [errorModal, setErrorModal] = useState({ open: false, message: '' });
-  const [deleteModal, setDeleteModal] = useState({ open: false, item: null, onConfirm: null });
-  const [transactionModal, setTransactionModal] = useState({ open: false, transactionId: null });
-  const [productModal, setProductModal] = useState({ open: false, product: null });
-  const [withdrawalModal, setWithdrawalModal] = useState({ open: false, walletBalance: 0 });
-  const [serviceModal, setServiceModal] = useState({ open: false, service: null }); // ✅ ajouté
+  const [infoModal, setInfoModal] = useState({ isOpen: false, message: '' });
+  const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null, onConfirm: null });
+  const [transactionModal, setTransactionModal] = useState({ isOpen: false, transactionId: null });
+  const [productModal, setProductModal] = useState({ isOpen: false, product: null });
+  const [withdrawalModal, setWithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
+  const [serviceModal, setServiceModal] = useState({ isOpen: false, service: null });
 
   // ----- States -----
   const [stats, setStats] = useState({});
@@ -33,71 +33,47 @@ const SellerDashboard = () => {
 
   // ----- Chargement initial -----
   useEffect(() => {
-    fetchUserStats();
-    fetchMyProducts();
-    fetchMySales();
-    fetchMyApplications();
-    fetchMyMissions();
+    const loadData = async () => {
+      try {
+        const [
+          statsRes,
+          productsRes,
+          salesRes,
+          applicationsRes,
+          missionsRes
+        ] = await Promise.all([
+          statsAPI.user(),
+          productsAPI.my(),
+          ordersAPI.sales(),
+          freelanceAPI.applications.my(),
+          freelanceAPI.missions.list()
+        ]);
+
+        setStats(statsRes.data.stats || {});
+        setProducts(productsRes.data || []);
+        setSales(salesRes.data || []);
+        setApplications(applicationsRes.data || []);
+        setMissions(missionsRes.data || []);
+      } catch {
+        setErrorModal({ isOpen: true, message: 'Erreur lors du chargement initial.' });
+      }
+    };
+
+    loadData();
   }, []);
-
-  // ----- API calls -----
-  const fetchUserStats = async () => {
-    try {
-      const res = await statsAPI.user();
-      setStats(res.data.stats || {});
-    } catch {
-      setErrorModal({ open: true, message: 'Impossible de récupérer les statistiques.' });
-    }
-  };
-
-  const fetchMyProducts = async () => {
-    try {
-      const res = await productsAPI.my();
-      setProducts(res.data || []);
-    } catch {
-      setErrorModal({ open: true, message: 'Impossible de récupérer vos produits.' });
-    }
-  };
-
-  const fetchMySales = async () => {
-    try {
-      const res = await ordersAPI.sales();
-      setSales(res.data || []);
-    } catch {
-      setErrorModal({ open: true, message: 'Impossible de récupérer vos ventes.' });
-    }
-  };
-
-  const fetchMyApplications = async () => {
-    try {
-      const res = await freelanceAPI.applications.my();
-      setApplications(res.data || []);
-    } catch {
-      setErrorModal({ open: true, message: 'Impossible de récupérer vos candidatures.' });
-    }
-  };
-
-  const fetchMyMissions = async () => {
-    try {
-      const res = await freelanceAPI.missions.list();
-      setMissions(res.data || []);
-    } catch {
-      setErrorModal({ open: true, message: 'Impossible de récupérer vos missions.' });
-    }
-  };
 
   // ----- Supprimer Produit -----
   const handleDeleteProduct = (product) => {
     setDeleteModal({
-      open: true,
+      isOpen: true,
       item: product,
       onConfirm: async () => {
         try {
           await productsAPI.delete(product.id);
-          fetchMyProducts();
-          setDeleteModal({ open: false, item: null, onConfirm: null });
+          setProducts(prev => prev.filter(p => p.id !== product.id));
+          setDeleteModal({ isOpen: false, item: null, onConfirm: null });
         } catch {
-          setErrorModal({ open: true, message: 'Impossible de supprimer le produit.' });
+          setErrorModal({ isOpen: true, message: 'Impossible de supprimer le produit.' });
         }
       },
     });
@@ -105,12 +81,12 @@ const SellerDashboard = () => {
 
   // ----- Livrer Mission -----
   const handleDeliverMission = (mission) => {
-    setServiceModal({ open: true, service: mission });
+    setServiceModal({ isOpen: true, service: mission });
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* ====== En-tête ====== */}
+      {/* ====== Header ====== */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-6">
           <div>
@@ -118,11 +94,10 @@ const SellerDashboard = () => {
             <p className="mt-1 text-sm text-gray-500">Gérez vos produits, ventes et missions freelance</p>
           </div>
 
-          {/* Boutons action */}
           <div className="flex flex-wrap justify-start sm:justify-end gap-3 w-full sm:w-auto">
             <Button
               variant="primary"
-              onClick={() => setProductModal({ open: true, product: null })}
+              onClick={() => setProductModal({ isOpen: true, product: null })}
               className="w-full sm:w-auto"
             >
               + Nouveau Produit
@@ -136,7 +111,7 @@ const SellerDashboard = () => {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => setWithdrawalModal({ open: true, walletBalance: stats.totalSellerEarnings || 0 })}
+              onClick={() => setWithdrawalModal({ isOpen: true, walletBalance: stats.totalSellerEarnings || 0 })}
               className="w-full sm:w-auto"
             >
               Retrait
@@ -144,7 +119,7 @@ const SellerDashboard = () => {
           </div>
         </div>
 
-        {/* ====== Navigation Onglets ====== */}
+        {/* Navigation onglets */}
         <nav className="border-b border-gray-200 overflow-x-auto">
           <div className="flex space-x-6 px-4 sm:px-6 lg:px-8 min-w-max">
             {[
@@ -153,7 +128,7 @@ const SellerDashboard = () => {
               { key: 'sales', label: 'Mes Ventes' },
               { key: 'missions', label: 'Missions Freelance' },
               { key: 'applications', label: 'Mes Candidatures' },
-            ].map((tab) => (
+            ].map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
@@ -172,121 +147,112 @@ const SellerDashboard = () => {
 
       {/* ====== Contenu Principal ====== */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
-        {/* ----- Vue Générale ----- */}
+        {/* Vue Générale */}
         {activeTab === 'overview' && (
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             <StatsCard title="Produits Actifs" value={products.length} icon="📦" color="blue" />
             <StatsCard title="Ventes Totales" value={stats.salesCount || 0} icon="💰" color="green" />
             <StatsCard title="Gains Nets" value={`${stats.totalSellerEarnings || 0} XOF`} icon="🎯" color="purple" />
-            <StatsCard title="Missions Actives" value={missions.filter((m) => m.status === 'in_progress').length} icon="⚡" color="orange" />
-            <StatsCard title="Missions Terminées" value={missions.filter((m) => m.status === 'completed').length} icon="✅" color="emerald" />
+            <StatsCard title="Missions Actives" value={missions.filter(m => m.status === 'in_progress').length} icon="⚡" color="orange" />
+            <StatsCard title="Missions Terminées" value={missions.filter(m => m.status === 'completed').length} icon="✅" color="emerald" />
             <StatsCard title="Candidatures" value={applications.length} icon="📝" color="yellow" />
           </section>
         )}
 
-        {/* ----- Mes Produits ----- */}
+        {/* Mes Produits */}
         {activeTab === 'products' && (
           <section className="bg-white shadow rounded-lg overflow-hidden mb-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b px-6 py-4 gap-4">
               <h3 className="text-lg font-medium text-gray-900">Mes Produits ({products.length})</h3>
-              <Button onClick={() => setProductModal({ open: true, product: null })}>+ Ajouter Produit</Button>
+              <Button onClick={() => setProductModal({ isOpen: true, product: null })}>+ Ajouter Produit</Button>
             </div>
-            <div className="overflow-x-auto">
-              <DataTable
-                data={products}
-                columns={[
-                  { key: 'name', label: 'Nom' },
-                  { key: 'description', label: 'Description' },
-                  { key: 'price', label: 'Prix', format: (v) => `${v} XOF` },
-                  { key: 'category', label: 'Catégorie' },
-                  { key: 'created_at', label: 'Créé le', format: (v) => new Date(v).toLocaleDateString() },
-                ]}
-                actions={[
-                  { label: 'Modifier', onClick: (p) => setProductModal({ open: true, product: p }) },
-                  { label: 'Supprimer', onClick: handleDeleteProduct },
-                ]}
-              />
-            </div>
+            <DataTable
+              data={products}
+              columns={[
+                { key: 'name', label: 'Nom' },
+                { key: 'description', label: 'Description' },
+                { key: 'price', label: 'Prix', format: v => `${v} XOF` },
+                { key: 'category', label: 'Catégorie' },
+                { key: 'created_at', label: 'Créé le', format: v => new Date(v).toLocaleDateString() },
+              ]}
+              actions={[
+                { label: 'Modifier', onClick: p => setProductModal({ isOpen: true, product: p }) },
+                { label: 'Supprimer', onClick: handleDeleteProduct },
+              ]}
+            />
           </section>
         )}
 
-        {/* ----- Missions Freelance ----- */}
+        {/* Missions Freelance */}
         {activeTab === 'missions' && (
           <section className="bg-white shadow rounded-lg overflow-hidden">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b px-6 py-4 gap-4">
               <h3 className="text-lg font-medium text-gray-900">Missions Freelance ({missions.length})</h3>
             </div>
-            <div className="overflow-x-auto">
-              <DataTable
-                data={missions}
-                columns={[
-                  { key: 'mission.title', label: 'Titre', format: (v, row) => row.mission?.title || 'N/A' },
-                  { key: 'mission.price', label: 'Prix', format: (v, row) => `${row.mission?.price || 0} XOF` },
-                  { key: 'status', label: 'Statut' },
-                  { key: 'created_at', label: 'Date', format: (v) => new Date(v).toLocaleDateString() },
-                ]}
-                actions={(m) => {
-                  const actions = [];
-                  if (m.status === 'in_progress') {
-                    actions.push({ label: 'Livrer', onClick: () => handleDeliverMission(m) });
-                  }
-                  if (m.delivery_file_url) {
-                    actions.push({
-                      label: 'Télécharger',
-                      onClick: () => window.open(m.delivery_file_url, '_blank'),
-                    });
-                  }
-                  return actions;
-                }}
-              />
-            </div>
+            <DataTable
+              data={missions}
+              columns={[
+                { key: 'mission.title', label: 'Titre', format: (v, row) => row.mission?.title || 'N/A' },
+                { key: 'mission.price', label: 'Prix', format: (v, row) => `${row.mission?.price || 0} XOF` },
+                { key: 'status', label: 'Statut' },
+                { key: 'created_at', label: 'Date', format: v => new Date(v).toLocaleDateString() },
+              ]}
+              actions={m => {
+                const actions = [];
+                if (m.status === 'in_progress') actions.push({ label: 'Livrer', onClick: () => handleDeliverMission(m) });
+                if (m.delivery_file_url) actions.push({ label: 'Télécharger', onClick: () => window.open(m.delivery_file_url, '_blank') });
+                return actions;
+              }}
+            />
           </section>
         )}
       </main>
 
-      {/* ====== Modales globales ====== */}
-      {infoModal.open && <InfoModal open={infoModal.open} onClose={() => setInfoModal({ open: false, message: '' })} message={infoModal.message} />}
-      {errorModal.open && <ErrorModal open={errorModal.open} onClose={() => setErrorModal({ open: false, message: '' })} message={errorModal.message} />}
-      {deleteModal.open && (
+      {/* ====== Modales ====== */}
+      {infoModal.isOpen && <InfoModal isOpen={infoModal.isOpen} onClose={() => setInfoModal({ isOpen: false, message: '' })} message={infoModal.message} />}
+      {errorModal.isOpen && <ErrorModal isOpen={errorModal.isOpen} onClose={() => setErrorModal({ isOpen: false, message: '' })} message={errorModal.message} />}
+      {deleteModal.isOpen && (
         <DeleteConfirmModal
-          open={deleteModal.open}
+          isOpen={deleteModal.isOpen}
           onConfirm={deleteModal.onConfirm}
-          onCancel={() => setDeleteModal({ open: false, item: null, onConfirm: null })}
+          onClose={() => setDeleteModal({ isOpen: false, item: null, onConfirm: null })}
         />
       )}
-      {transactionModal.open && (
+      {transactionModal.isOpen && (
         <TransactionDetailsModal
-          open={transactionModal.open}
-          onClose={() => setTransactionModal({ open: false, transactionId: null })}
+          open={transactionModal.isOpen}
+          onClose={() => setTransactionModal({ isOpen: false, transactionId: null })}
           transactionId={transactionModal.transactionId}
         />
       )}
-      {productModal.open && (
+      {productModal.isOpen && (
         <ProductModal
-          isOpen={productModal.open}
-          onClose={() => setProductModal({ open: false, product: null })}
+          isOpen={productModal.isOpen}
+          onClose={() => setProductModal({ isOpen: false, product: null })}
           product={productModal.product}
           onSaved={() => {
-            fetchMyProducts();
-            fetchUserStats();
+            setProductModal({ isOpen: false, product: null });
+            // Recharge stats et produits
+            productsAPI.my().then(res => setProducts(res.data || []));
+            statsAPI.user().then(res => setStats(res.data.stats || {}));
           }}
         />
       )}
-      {serviceModal.open && (
+      {serviceModal.isOpen && (
         <ServiceModal
-          isOpen={serviceModal.open}
-          onClose={() => setServiceModal({ open: false, service: null })}
+          isOpen={serviceModal.isOpen}
+          onClose={() => setServiceModal({ isOpen: false, service: null })}
           service={serviceModal.service}
         />
       )}
-      {withdrawalModal.open && (
+      {withdrawalModal.isOpen && (
         <WithdrawalModal
-          open={withdrawalModal.open}
-          onClose={() => setWithdrawalModal({ open: false, walletBalance: 0 })}
+          open={withdrawalModal.isOpen}
+          onClose={() => setWithdrawalModal({ isOpen: false, walletBalance: 0 })}
           walletBalance={withdrawalModal.walletBalance}
           onSuccess={() => {
-            fetchUserStats();
-            setInfoModal({ open: true, message: 'Retrait effectué avec succès 💸' });
+            statsAPI.user().then(res => setStats(res.data.stats || {}));
+            setInfoModal({ isOpen: true, message: 'Retrait effectué avec succès 💸' });
           }}
         />
       )}
