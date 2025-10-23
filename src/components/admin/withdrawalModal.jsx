@@ -60,7 +60,7 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
 
         <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
           <p className="text-sm text-blue-700"><strong>Solde disponible:</strong> {walletBalance} XOF</p>
-          <p className="text-xs text-blue-600 mt-1">Ce solde provient des ventes de vos produits digitaux et de vos missions freelances exécuter. BON APPETIT À VOUS, PROFITEZ DE VOS GAINS 💰  </p>
+          <p className="text-xs text-blue-600 mt-1">Ce solde provient des ventes de vos produits digitaux et de vos missions freelances exécutées. BON APPETIT À VOUS, PROFITEZ DE VOS GAINS 💰  </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
