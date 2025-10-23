@@ -7,7 +7,8 @@ import InfoModal from '../../components/ui/InfoModal';
 import ErrorModal from '../../components/ui/ErrorModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import TransactionDetailsModal from '../../components/admin/TransactionDetailsModal';
-import ServiceModal from '../../components/modals/ServiceModal';
+import ProductModal from '../../components/modals/ProductModal';
+import ServiceModal from '../../components/modals/ServiceModal'; // ✅ ajouté
 import WithdrawalModal from '../../components/admin/WithdrawalModal';
 import { productsAPI, ordersAPI, freelanceAPI, withdrawalsAPI, statsAPI } from '../../services/api';
 
@@ -19,8 +20,9 @@ const SellerDashboard = () => {
   const [errorModal, setErrorModal] = useState({ open: false, message: '' });
   const [deleteModal, setDeleteModal] = useState({ open: false, item: null, onConfirm: null });
   const [transactionModal, setTransactionModal] = useState({ open: false, transactionId: null });
-  const [serviceModal, setServiceModal] = useState({ open: false, service: null });
+  const [productModal, setProductModal] = useState({ open: false, product: null });
   const [withdrawalModal, setWithdrawalModal] = useState({ open: false, walletBalance: 0 });
+  const [serviceModal, setServiceModal] = useState({ open: false, service: null }); // ✅ ajouté
 
   // ----- States -----
   const [stats, setStats] = useState({});
@@ -84,11 +86,6 @@ const SellerDashboard = () => {
     }
   };
 
-  // ----- Filtrage Missions -----
-  const pendingApplications = applications.filter(app => ['open', 'pending_payment'].includes(app.mission?.status));
-  const activeMissions = missions.filter(m => m.status === 'in_progress');
-  const completedMissions = missions.filter(m => ['completed', 'awaiting_validation'].includes(m.status));
-
   // ----- Supprimer Produit -----
   const handleDeleteProduct = (product) => {
     setDeleteModal({
@@ -102,11 +99,16 @@ const SellerDashboard = () => {
         } catch {
           setErrorModal({ open: true, message: 'Impossible de supprimer le produit.' });
         }
-      }
+      },
     });
   };
 
-return (
+  // ----- Livrer Mission -----
+  const handleDeliverMission = (mission) => {
+    setServiceModal({ open: true, service: mission });
+  };
+
+  return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* ====== En-tête ====== */}
       <header className="bg-white shadow">
@@ -120,7 +122,7 @@ return (
           <div className="flex flex-wrap justify-start sm:justify-end gap-3 w-full sm:w-auto">
             <Button
               variant="primary"
-              onClick={() => setServiceModal({ open: true, service: null })}
+              onClick={() => setProductModal({ open: true, product: null })}
               className="w-full sm:w-auto"
             >
               + Nouveau Produit
@@ -150,8 +152,8 @@ return (
               { key: 'products', label: 'Mes Produits' },
               { key: 'sales', label: 'Mes Ventes' },
               { key: 'missions', label: 'Missions Freelance' },
-              { key: 'applications', label: 'Mes Candidatures' }
-            ].map(tab => (
+              { key: 'applications', label: 'Mes Candidatures' },
+            ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
@@ -176,34 +178,31 @@ return (
             <StatsCard title="Produits Actifs" value={products.length} icon="📦" color="blue" />
             <StatsCard title="Ventes Totales" value={stats.salesCount || 0} icon="💰" color="green" />
             <StatsCard title="Gains Nets" value={`${stats.totalSellerEarnings || 0} XOF`} icon="🎯" color="purple" />
-            <StatsCard title="Missions Actives" value={missions.filter(m => m.status === 'in_progress').length} icon="⚡" color="orange" />
-            <StatsCard title="Missions Terminées" value={missions.filter(m => m.status === 'completed').length} icon="✅" color="emerald" />
+            <StatsCard title="Missions Actives" value={missions.filter((m) => m.status === 'in_progress').length} icon="⚡" color="orange" />
+            <StatsCard title="Missions Terminées" value={missions.filter((m) => m.status === 'completed').length} icon="✅" color="emerald" />
             <StatsCard title="Candidatures" value={applications.length} icon="📝" color="yellow" />
           </section>
         )}
 
         {/* ----- Mes Produits ----- */}
         {activeTab === 'products' && (
-          <section className="bg-white shadow rounded-lg overflow-hidden">
+          <section className="bg-white shadow rounded-lg overflow-hidden mb-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b px-6 py-4 gap-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Mes Produits ({products.length})
-              </h3>
-              <Button onClick={() => setServiceModal({ open: true, service: null })}>+ Ajouter Produit</Button>
+              <h3 className="text-lg font-medium text-gray-900">Mes Produits ({products.length})</h3>
+              <Button onClick={() => setProductModal({ open: true, product: null })}>+ Ajouter Produit</Button>
             </div>
-
             <div className="overflow-x-auto">
               <DataTable
                 data={products}
                 columns={[
                   { key: 'name', label: 'Nom' },
                   { key: 'description', label: 'Description' },
-                  { key: 'price', label: 'Prix', format: v => `${v} XOF` },
+                  { key: 'price', label: 'Prix', format: (v) => `${v} XOF` },
                   { key: 'category', label: 'Catégorie' },
-                  { key: 'created_at', label: 'Créé le', format: v => new Date(v).toLocaleDateString() },
+                  { key: 'created_at', label: 'Créé le', format: (v) => new Date(v).toLocaleDateString() },
                 ]}
                 actions={[
-                  { label: 'Modifier', onClick: p => setServiceModal({ open: true, service: p }) },
+                  { label: 'Modifier', onClick: (p) => setProductModal({ open: true, product: p }) },
                   { label: 'Supprimer', onClick: handleDeleteProduct },
                 ]}
               />
@@ -211,121 +210,50 @@ return (
           </section>
         )}
 
-        {/* ----- Mes Missions Freelance ----- */}
+        {/* ----- Missions Freelance ----- */}
         {activeTab === 'missions' && (
           <section className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-6 py-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Mes Missions ({missions.length})
-              </h3>
-              <Button variant="secondary" onClick={fetchMyMissions}>
-                🔄 Rafraîchir
-              </Button>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b px-6 py-4 gap-4">
+              <h3 className="text-lg font-medium text-gray-900">Missions Freelance ({missions.length})</h3>
             </div>
-
             <div className="overflow-x-auto">
               <DataTable
                 data={missions}
                 columns={[
-                  { key: 'title', label: 'Titre' },
-                  { key: 'budget', label: 'Budget', format: v => `${v} XOF` },
+                  { key: 'mission.title', label: 'Titre', format: (v, row) => row.mission?.title || 'N/A' },
+                  { key: 'mission.price', label: 'Prix', format: (v, row) => `${row.mission?.price || 0} XOF` },
                   { key: 'status', label: 'Statut' },
-                  { key: 'created_at', label: 'Créée le', format: v => new Date(v).toLocaleDateString() },
+                  { key: 'created_at', label: 'Date', format: (v) => new Date(v).toLocaleDateString() },
                 ]}
-                actions={[
-                  { label: 'Détails', onClick: m => setInfoModal({ open: true, message: `Mission: ${m.title}` }) },
-                ]}
-              />
-            </div>
-          </section>
-        )}
-
-        {/* ----- Mes Candidatures ----- */}
-        {activeTab === 'applications' && (
-          <section className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-6 py-4 border-b">
-              <h3 className="text-lg font-medium text-gray-900">
-                Mes Candidatures ({applications.length})
-              </h3>
-            </div>
-            <div className="overflow-x-auto">
-              <DataTable
-                data={applications}
-                columns={[
-                  { key: 'mission.title', label: 'Mission' },
-                  { key: 'proposed_price', label: 'Prix Proposé', format: v => `${v} XOF` },
-                  { key: 'mission.status', label: 'Statut Mission' },
-                  { key: 'created_at', label: 'Date', format: v => new Date(v).toLocaleDateString() },
-                ]}
-                actions={[
-                  { label: 'Voir Détails', onClick: a => setTransactionModal({ open: true, transactionId: a.id }) },
-                ]}
-              />
-            </div>
-          </section>
-        )}
-
-        {/* ----- Mes Ventes ----- */}
-        {activeTab === 'sales' && (
-          <section className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-6 py-4 border-b">
-              <h3 className="text-lg font-medium text-gray-900">
-                Mes Ventes ({sales.length})
-              </h3>
-            </div>
-            <div className="overflow-x-auto">
-              <DataTable
-                data={sales}
-                columns={[
-                  { key: 'order_id', label: 'Commande' },
-                  { key: 'product_name', label: 'Produit' },
-                  { key: 'amount', label: 'Montant', format: v => `${v} XOF` },
-                  { key: 'status', label: 'Statut' },
-                  { key: 'created_at', label: 'Date', format: v => new Date(v).toLocaleDateString() },
-                ]}
-                actions={[
-                  { label: 'Détails', onClick: s => setTransactionModal({ open: true, transactionId: s.id }) },
-                ]}
+                actions={(m) => {
+                  const actions = [];
+                  if (m.status === 'in_progress') {
+                    actions.push({ label: 'Livrer', onClick: () => handleDeliverMission(m) });
+                  }
+                  if (m.delivery_file_url) {
+                    actions.push({
+                      label: 'Télécharger',
+                      onClick: () => window.open(m.delivery_file_url, '_blank'),
+                    });
+                  }
+                  return actions;
+                }}
               />
             </div>
           </section>
         )}
       </main>
 
-
-{/* ====== Modales globales ====== */}
-
-      {/* InfoModal */}
-      {infoModal.open && (
-        <InfoModal
-          open={infoModal.open}
-          onClose={() => setInfoModal({ open: false, message: '' })}
-          message={infoModal.message}
-        />
-      )}
-
-      {/* ErrorModal */}
-      {errorModal.open && (
-        <ErrorModal
-          open={errorModal.open}
-          onClose={() => setErrorModal({ open: false, message: '' })}
-          message={errorModal.message}
-        />
-      )}
-
-      {/* DeleteConfirmModal */}
+      {/* ====== Modales globales ====== */}
+      {infoModal.open && <InfoModal open={infoModal.open} onClose={() => setInfoModal({ open: false, message: '' })} message={infoModal.message} />}
+      {errorModal.open && <ErrorModal open={errorModal.open} onClose={() => setErrorModal({ open: false, message: '' })} message={errorModal.message} />}
       {deleteModal.open && (
         <DeleteConfirmModal
           open={deleteModal.open}
-          onConfirm={() => {
-            handleDeleteProduct(deleteModal.productId);
-            setDeleteModal({ open: false, productId: null });
-          }}
-          onCancel={() => setDeleteModal({ open: false, productId: null })}
+          onConfirm={deleteModal.onConfirm}
+          onCancel={() => setDeleteModal({ open: false, item: null, onConfirm: null })}
         />
       )}
-
-      {/* TransactionDetailsModal */}
       {transactionModal.open && (
         <TransactionDetailsModal
           open={transactionModal.open}
@@ -333,28 +261,31 @@ return (
           transactionId={transactionModal.transactionId}
         />
       )}
-
-      {/* ServiceModal (ajout / édition produit) */}
-      {serviceModal.open && (
-        <ServiceModal
-          open={serviceModal.open}
-          onClose={() => setServiceModal({ open: false, service: null })}
-          service={serviceModal.service}
+      {productModal.open && (
+        <ProductModal
+          isOpen={productModal.open}
+          onClose={() => setProductModal({ open: false, product: null })}
+          product={productModal.product}
           onSaved={() => {
             fetchMyProducts();
-            fetchSellerStats();
+            fetchUserStats();
           }}
         />
       )}
-
-      {/* WithdrawalModal (retrait) */}
+      {serviceModal.open && (
+        <ServiceModal
+          isOpen={serviceModal.open}
+          onClose={() => setServiceModal({ open: false, service: null })}
+          service={serviceModal.service}
+        />
+      )}
       {withdrawalModal.open && (
         <WithdrawalModal
           open={withdrawalModal.open}
           onClose={() => setWithdrawalModal({ open: false, walletBalance: 0 })}
           walletBalance={withdrawalModal.walletBalance}
           onSuccess={() => {
-            fetchSellerStats();
+            fetchUserStats();
             setInfoModal({ open: true, message: 'Retrait effectué avec succès 💸' });
           }}
         />
@@ -364,4 +295,3 @@ return (
 };
 
 export default SellerDashboard;
-
