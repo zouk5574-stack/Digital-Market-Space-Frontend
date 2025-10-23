@@ -10,7 +10,7 @@ const HomePage = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 2500); // ⏱️ Durée d’affichage du splash
+    }, 2800); // ⏱️ Durée d’affichage du splash
     return () => clearTimeout(timer);
   }, []);
 
