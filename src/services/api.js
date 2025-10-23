@@ -1,6 +1,25 @@
 // src/services/api.js
 import axios from 'axios';
-import { AUTH, ADMIN, FREELANCE, PRODUCTS, ORDERS, WITHDRAWALS, FILES, FEDAPAY, PAYMENTS, SETTINGS, CATEGORIES, TAGS, NOTIFS, CHAT, AI, AI_EXTRA, STATS, PROVIDERS } from './endpoints';
+import {
+  AUTH,
+  ADMIN,
+  FREELANCE,
+  PRODUCTS,
+  ORDERS,
+  WITHDRAWALS,
+  FILES,
+  FEDAPAY,
+  PAYMENTS,
+  SETTINGS,
+  CATEGORIES,
+  TAGS,
+  NOTIFS,
+  CHAT,
+  AI,
+  AI_EXTRA,
+  STATS,
+  PROVIDERS
+} from './endpoints';
 
 // ===============================
 // CONFIGURATION AXIOS
@@ -14,11 +33,14 @@ const api = axios.create({
 });
 
 // Inject token
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('authToken');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-}, error => Promise.reject(error));
+api.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('authToken');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  error => Promise.reject(error)
+);
 
 // Global response handler
 api.interceptors.response.use(
@@ -27,7 +49,9 @@ api.interceptors.response.use(
     if (err.response) {
       const { status, data } = err.response;
       switch (status) {
-        case 400: console.error('Validation error:', data.error); break;
+        case 400:
+          console.error('Validation error:', data.error);
+          break;
         case 401:
           localStorage.removeItem('authToken');
           localStorage.removeItem('userData');
@@ -39,10 +63,17 @@ api.interceptors.response.use(
           }
           console.error('Access denied:', data.error);
           break;
-        case 404: console.error('Not found:', data.error); break;
-        case 409: console.error('Conflict:', data.error); break;
-        case 500: console.error('Server error:', data.error); break;
-        default: console.error('Unknown error:', data.error);
+        case 404:
+          console.error('Not found:', data.error);
+          break;
+        case 409:
+          console.error('Conflict:', data.error);
+          break;
+        case 500:
+          console.error('Server error:', data.error);
+          break;
+        default:
+          console.error('Unknown error:', data.error);
       }
     }
     return Promise.reject(err);
@@ -81,6 +112,10 @@ export const adminAPI = {
   commission: {
     update: (settings) => api.put(ADMIN.COMMISSION_SETTINGS, settings),
   },
+  settings: {
+    get: () => api.get(ADMIN.SETTINGS),
+    update: (data) => api.put(ADMIN.SETTINGS, data),
+  },
   logs: {
     get: () => api.get(ADMIN.LOGS),
     getByAction: (action) => api.get(ADMIN.LOGS_BY_ACTION(action)),
@@ -96,9 +131,11 @@ export const freelanceAPI = {
     getById: (id) => api.get(FREELANCE.MISSION_BY_ID(id)),
     create: (data) => api.post(FREELANCE.MISSIONS, data),
     apply: (data) => api.post(FREELANCE.APPLY, data),
-    acceptApplication: (applicationId) => api.post(FREELANCE.ACCEPT_APPLICATION, { application_id: applicationId }),
+    acceptApplication: (applicationId) =>
+      api.post(FREELANCE.ACCEPT_APPLICATION, { application_id: applicationId }),
     deliver: (data) => api.post(FREELANCE.DELIVER, data),
-    validateDelivery: (deliveryId) => api.post(FREELANCE.VALIDATE_DELIVERY, { delivery_id: deliveryId }),
+    validateDelivery: (deliveryId) =>
+      api.post(FREELANCE.VALIDATE_DELIVERY, { delivery_id: deliveryId }),
   },
   applications: {
     my: () => api.get(FREELANCE.MY_APPLICATIONS),
@@ -113,7 +150,8 @@ export const productsAPI = {
   all: (params) => api.get(PRODUCTS.BASE, { params }),
   getById: (id) => api.get(PRODUCTS.BY_ID(id)),
   my: () => api.get(PRODUCTS.MY),
-  search: (query, params) => api.get(PRODUCTS.SEARCH, { params: { q: query, ...params } }),
+  search: (query, params) =>
+    api.get(PRODUCTS.SEARCH, { params: { q: query, ...params } }),
 };
 
 // ===============================
@@ -136,10 +174,13 @@ export const withdrawalsAPI = {
 };
 
 // ===============================
-// FICHIERS
+// FICHIERS (SUPABASE / STORAGE)
 // ===============================
 export const filesAPI = {
-  upload: (formData) => api.post(FILES.UPLOAD, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  upload: (formData) =>
+    api.post(FILES.UPLOAD, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
   signedUrl: (id) => api.get(FILES.SIGNED_URL(id)),
   publicUrl: (id) => api.get(FILES.PUBLIC_URL(id)),
   delete: (id) => api.delete(FILES.DELETE(id)),
@@ -200,7 +241,9 @@ export const aiAPI = {
   },
 };
 
-// Extensions IA
+// ===============================
+// IA EXTRA
+// ===============================
 export const aiExtraAPI = {
   toolsList: () => api.get(AI_EXTRA.TOOLS_LIST),
   savePrompt: (data) => api.post(AI_EXTRA.SAVE_PROMPT, data),
