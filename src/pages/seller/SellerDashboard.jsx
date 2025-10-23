@@ -15,33 +15,25 @@ import { productsAPI, ordersAPI, freelanceAPI, statsAPI } from '../../services/a
 const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
-  // ----- Modals -----
+  // Modales
   const [infoModal, setInfoModal] = useState({ isOpen: false, message: '' });
   const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null, onConfirm: null });
-  const [transactionModal, setTransactionModal] = useState({ isOpen: false, transactionId: null });
   const [productModal, setProductModal] = useState({ isOpen: false, product: null });
-  const [withdrawalModal, setWithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
   const [serviceModal, setServiceModal] = useState({ isOpen: false, service: null });
+  const [withdrawalModal, setWithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
 
-  // ----- States -----
+  // Data
   const [stats, setStats] = useState({});
   const [products, setProducts] = useState([]);
   const [sales, setSales] = useState([]);
   const [applications, setApplications] = useState([]);
   const [missions, setMissions] = useState([]);
 
-  // ----- Chargement initial -----
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [
-          statsRes,
-          productsRes,
-          salesRes,
-          applicationsRes,
-          missionsRes
-        ] = await Promise.all([
+        const [statsRes, productsRes, salesRes, applicationsRes, missionsRes] = await Promise.all([
           statsAPI.user(),
           productsAPI.my(),
           ordersAPI.sales(),
@@ -58,11 +50,10 @@ const SellerDashboard = () => {
         setErrorModal({ isOpen: true, message: 'Erreur lors du chargement initial.' });
       }
     };
-
     loadData();
   }, []);
 
-  // ----- Supprimer Produit -----
+  // Supprimer Produit
   const handleDeleteProduct = (product) => {
     setDeleteModal({
       isOpen: true,
@@ -79,14 +70,14 @@ const SellerDashboard = () => {
     });
   };
 
-  // ----- Livrer Mission -----
+  // Livrer Mission
   const handleDeliverMission = (mission) => {
     setServiceModal({ isOpen: true, service: mission });
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* ====== Header ====== */}
+      {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-6">
           <div>
@@ -95,24 +86,11 @@ const SellerDashboard = () => {
           </div>
 
           <div className="flex flex-wrap justify-start sm:justify-end gap-3 w-full sm:w-auto">
-            <Button
-              variant="primary"
-              onClick={() => setProductModal({ isOpen: true, product: null })}
-              className="w-full sm:w-auto"
-            >
-              + Nouveau Produit
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setActiveTab('missions')}
-              className="w-full sm:w-auto"
-            >
-              Voir Missions
-            </Button>
+            <Button variant="primary" onClick={() => setProductModal({ isOpen: true, product: null })}>+ Nouveau Produit</Button>
+            <Button variant="secondary" onClick={() => setActiveTab('missions')}>Voir Missions</Button>
             <Button
               variant="secondary"
               onClick={() => setWithdrawalModal({ isOpen: true, walletBalance: stats.totalSellerEarnings || 0 })}
-              className="w-full sm:w-auto"
             >
               Retrait
             </Button>
@@ -133,9 +111,7 @@ const SellerDashboard = () => {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-150 ${
-                  activeTab === tab.key
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  activeTab === tab.key ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 {tab.label}
@@ -145,9 +121,8 @@ const SellerDashboard = () => {
         </nav>
       </header>
 
-      {/* ====== Contenu Principal ====== */}
+      {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
-        {/* Vue Générale */}
         {activeTab === 'overview' && (
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             <StatsCard title="Produits Actifs" value={products.length} icon="📦" color="blue" />
@@ -159,7 +134,6 @@ const SellerDashboard = () => {
           </section>
         )}
 
-        {/* Mes Produits */}
         {activeTab === 'products' && (
           <section className="bg-white shadow rounded-lg overflow-hidden mb-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b px-6 py-4 gap-4">
@@ -183,7 +157,6 @@ const SellerDashboard = () => {
           </section>
         )}
 
-        {/* Missions Freelance */}
         {activeTab === 'missions' && (
           <section className="bg-white shadow rounded-lg overflow-hidden">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b px-6 py-4 gap-4">
@@ -208,54 +181,13 @@ const SellerDashboard = () => {
         )}
       </main>
 
-      {/* ====== Modales ====== */}
+      {/* Modales */}
       {infoModal.isOpen && <InfoModal isOpen={infoModal.isOpen} onClose={() => setInfoModal({ isOpen: false, message: '' })} message={infoModal.message} />}
       {errorModal.isOpen && <ErrorModal isOpen={errorModal.isOpen} onClose={() => setErrorModal({ isOpen: false, message: '' })} message={errorModal.message} />}
-      {deleteModal.isOpen && (
-        <DeleteConfirmModal
-          isOpen={deleteModal.isOpen}
-          onConfirm={deleteModal.onConfirm}
-          onClose={() => setDeleteModal({ isOpen: false, item: null, onConfirm: null })}
-        />
-      )}
-      {transactionModal.isOpen && (
-        <TransactionDetailsModal
-          open={transactionModal.isOpen}
-          onClose={() => setTransactionModal({ isOpen: false, transactionId: null })}
-          transactionId={transactionModal.transactionId}
-        />
-      )}
-      {productModal.isOpen && (
-        <ProductModal
-          isOpen={productModal.isOpen}
-          onClose={() => setProductModal({ isOpen: false, product: null })}
-          product={productModal.product}
-          onSaved={() => {
-            setProductModal({ isOpen: false, product: null });
-            // Recharge stats et produits
-            productsAPI.my().then(res => setProducts(res.data || []));
-            statsAPI.user().then(res => setStats(res.data.stats || {}));
-          }}
-        />
-      )}
-      {serviceModal.isOpen && (
-        <ServiceModal
-          isOpen={serviceModal.isOpen}
-          onClose={() => setServiceModal({ isOpen: false, service: null })}
-          service={serviceModal.service}
-        />
-      )}
-      {withdrawalModal.isOpen && (
-        <WithdrawalModal
-          open={withdrawalModal.isOpen}
-          onClose={() => setWithdrawalModal({ isOpen: false, walletBalance: 0 })}
-          walletBalance={withdrawalModal.walletBalance}
-          onSuccess={() => {
-            statsAPI.user().then(res => setStats(res.data.stats || {}));
-            setInfoModal({ isOpen: true, message: 'Retrait effectué avec succès 💸' });
-          }}
-        />
-      )}
+      {deleteModal.isOpen && <DeleteConfirmModal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, item: null, onConfirm: null })} onConfirm={deleteModal.onConfirm} />}
+      {productModal.isOpen && <ProductModal isOpen={productModal.isOpen} onClose={() => setProductModal({ isOpen: false, product: null })} product={productModal.product} onSaved={() => { productsAPI.my().then(res => setProducts(res.data || [])); statsAPI.user().then(res => setStats(res.data.stats || {})); }} />}
+      {serviceModal.isOpen && <ServiceModal isOpen={serviceModal.isOpen} onClose={() => setServiceModal({ isOpen: false, service: null })} service={serviceModal.service} />}
+      {withdrawalModal.isOpen && <WithdrawalModal open={withdrawalModal.isOpen} onClose={() => setWithdrawalModal({ isOpen: false, walletBalance: 0 })} walletBalance={withdrawalModal.walletBalance} onSuccess={() => { statsAPI.user().then(res => setStats(res.data.stats || {})); setInfoModal({ isOpen: true, message: 'Retrait effectué avec succès 💸' }); }} />}
     </div>
   );
 };
