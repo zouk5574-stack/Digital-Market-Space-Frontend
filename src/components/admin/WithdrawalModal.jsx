@@ -20,7 +20,8 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
 
     setLoading(true);
     try {
-      await withdrawalActions.createWithdrawal({
+      // Crée la demande de retrait côté serveur
+      const res = await withdrawalActions.createWithdrawal({
         amount: amountNumber,
         provider_id: formData.provider_id,
         account_number: formData.account_number
@@ -28,6 +29,13 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
 
       // Mise à jour immédiate du solde dans le dashboard
       if (onWithdrawalSuccess) onWithdrawalSuccess(amountNumber);
+
+      // Redirection vers Fedapay si l'URL est fournie par l'API
+      if (res?.data?.payment_url) {
+        window.location.href = res.data.payment_url; // 🔗 redirection directe
+      } else {
+        alert('Retrait créé mais impossible de rediriger vers Fedapay.');
+      }
 
       onClose();
     } catch (err) {
