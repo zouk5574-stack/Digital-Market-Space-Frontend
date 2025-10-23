@@ -24,45 +24,43 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
   const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
-  const [products, setProducts] = useState([]);
   const [paymentProvider, setPaymentProvider] = useState({});
 
   // ----- Modals States -----
-  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [showFedapayModal, setShowFedapayModal] = useState(false);
-  const [showCommissionModal, setShowCommissionModal] = useState(false);
-  const [showInfoModal, setShowInfoModal] = useState({ isOpen: false, title: '', message: '' });
-  const [showErrorModal, setShowErrorModal] = useState({ isOpen: false, title: '', message: '' });
-  const [showPlatformSettingsModal, setShowPlatformSettingsModal] = useState(false);
-  const [showTransactionModal, setShowTransactionModal] = useState({ isOpen: false, transactionId: null });
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState({ isOpen: false, onConfirm: null, message: '' });
-  const [showServiceModal, setShowServiceModal] = useState({ isOpen: false, service: null });
+  const [infoModal, setInfoModal] = useState({ isOpen: false, title: '', message: '' });
+  const [errorModal, setErrorModal] = useState({ isOpen: false, title: '', message: '' });
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, message: '', onConfirm: null });
+  const [productModal, setProductModal] = useState({ isOpen: false, product: null });
+  const [fedapayModal, setFedapayModal] = useState(false);
+  const [commissionModal, setCommissionModal] = useState(false);
+  const [withdrawalModal, setWithdrawalModal] = useState(false);
+  const [platformSettingsModal, setPlatformSettingsModal] = useState(false);
+  const [transactionModal, setTransactionModal] = useState({ isOpen: false, transactionId: null });
+  const [serviceModal, setServiceModal] = useState({ isOpen: false, service: null });
 
   // ==================== Chargement initial ====================
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const [statsRes, usersRes, withdrawalsRes, productsRes, providerRes] = await Promise.all([
+      const [statsRes, usersRes, productsRes, withdrawalsRes, providerRes] = await Promise.all([
         statsAPI.admin(),
         adminAPI.users.list(),
-        adminAPI.withdrawals.list(),
         productsAPI.my(),
-        providersAPI.active()
+        adminAPI.withdrawals.list(),
+        providersAPI.active(),
       ]);
-
       setStats(statsRes.data || {});
       setUsers(usersRes.data || []);
-      setWithdrawals(withdrawalsRes.data || []);
       setProducts(productsRes.data || []);
+      setWithdrawals(withdrawalsRes.data || []);
       setPaymentProvider(providerRes.data?.provider || {});
-      setWalletBalance(0); // Remplacer par endpoint réel si disponible
-    } catch (error) {
-      console.error(error);
-      setShowErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de charger les données' });
+      setWalletBalance(0);
+    } catch (err) {
+      console.error(err);
+      setErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de charger les données' });
     } finally {
       setLoading(false);
     }
@@ -73,124 +71,96 @@ const AdminDashboard = () => {
   }, []);
 
   // ==================== Gestion Produits ====================
-  const handleOpenProductModal = (product = null) => {
-    setEditingProduct(product);
-    setShowProductModal(true);
-  };
-
-  const handleSaveProduct = async (productData) => {
+  const openProductModal = (product = null) => setProductModal({ isOpen: true, product });
+  const saveProduct = async (data) => {
     try {
-      if (editingProduct) {
-        await productsAPI.update(editingProduct.id, productData);
-      } else {
-        await productsAPI.create(productData);
-      }
-      const updatedProducts = await productsAPI.my();
-      setProducts(updatedProducts.data);
-      setShowProductModal(false);
-      setEditingProduct(null);
-      setShowInfoModal({ isOpen: true, title: 'Succès', message: 'Produit sauvegardé avec succès' });
-    } catch (error) {
-      console.error(error);
-      setShowErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de sauvegarder le produit' });
+      if (productModal.product) await productsAPI.update(productModal.product.id, data);
+      else await productsAPI.create(data);
+      const updated = await productsAPI.my();
+      setProducts(updated.data);
+      setProductModal({ isOpen: false, product: null });
+      setInfoModal({ isOpen: true, title: 'Succès', message: 'Produit sauvegardé' });
+    } catch (err) {
+      console.error(err);
+      setErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de sauvegarder le produit' });
     }
   };
-
-  const handleDeleteProduct = (productId) => {
-    setShowDeleteConfirm({
+  const deleteProduct = (id) => {
+    setDeleteConfirm({
       isOpen: true,
       message: 'Voulez-vous vraiment supprimer ce produit ?',
       onConfirm: async () => {
         try {
-          await productsAPI.delete(productId);
-          const updatedProducts = await productsAPI.my();
-          setProducts(updatedProducts.data);
-          setShowDeleteConfirm({ isOpen: false, onConfirm: null, message: '' });
-          setShowInfoModal({ isOpen: true, title: 'Succès', message: 'Produit supprimé' });
+          await productsAPI.delete(id);
+          setProducts((prev) => prev.filter(p => p.id !== id));
+          setDeleteConfirm({ isOpen: false, message: '', onConfirm: null });
+          setInfoModal({ isOpen: true, title: 'Succès', message: 'Produit supprimé' });
         } catch (err) {
           console.error(err);
-          setShowDeleteConfirm({ isOpen: false, onConfirm: null, message: '' });
-          setShowErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de supprimer le produit' });
+          setDeleteConfirm({ isOpen: false, message: '', onConfirm: null });
+          setErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de supprimer le produit' });
         }
-      }
+      },
     });
   };
 
   // ==================== Fedapay ====================
-  const handleSaveFedapayKeys = async (keys) => {
+  const saveFedapayKeys = async (keys) => {
     try {
       await fedapayAPI.setKeys(keys);
-      setShowFedapayModal(false);
+      setFedapayModal(false);
       const providerRes = await providersAPI.active();
       setPaymentProvider(providerRes.data?.provider || {});
-      setShowInfoModal({ isOpen: true, title: 'Succès', message: 'Clés Fedapay sauvegardées' });
-    } catch (error) {
-      console.error(error);
-      setShowErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de sauvegarder les clés Fedapay' });
+      setInfoModal({ isOpen: true, title: 'Succès', message: 'Clés Fedapay sauvegardées' });
+    } catch (err) {
+      console.error(err);
+      setErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de sauvegarder les clés' });
     }
   };
 
   // ==================== Commission ====================
-  const handleSaveCommission = async (newRate) => {
+  const saveCommission = async (rate) => {
     try {
-      await adminAPI.commission.update({ rate: newRate });
-      setShowCommissionModal(false);
+      await adminAPI.commission.update({ rate });
+      setCommissionModal(false);
       const statsRes = await statsAPI.admin();
       setStats(statsRes.data);
-      setShowInfoModal({ isOpen: true, title: 'Succès', message: 'Commission mise à jour' });
-    } catch (error) {
-      console.error(error);
-      setShowErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de sauvegarder la commission' });
+      setInfoModal({ isOpen: true, title: 'Succès', message: 'Commission mise à jour' });
+    } catch (err) {
+      console.error(err);
+      setErrorModal({ isOpen: true, title: 'Erreur', message: 'Impossible de sauvegarder la commission' });
     }
   };
 
-  // ==================== Loader Global ====================
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader size="large" />
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader size="large" /></div>;
 
   return (
     <DashboardLayout menuItems={menuItems}>
       <h1 className="text-3xl font-bold mb-6">Tableau de bord Admin</h1>
 
-      {/* === Statistiques principales === */}
+      {/* === Stats === */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="p-6 bg-blue-50 shadow rounded flex flex-col items-center hover:shadow-lg transition-shadow">
-          <span className="text-blue-500 text-3xl mb-2">👤</span>
-          <h3 className="text-gray-700 font-semibold mb-1">Utilisateurs</h3>
-          <p className="text-2xl font-bold">{stats.totalUsers || users.length}</p>
-        </div>
-        <div className="p-6 bg-green-50 shadow rounded flex flex-col items-center hover:shadow-lg transition-shadow">
-          <span className="text-green-500 text-3xl mb-2">📦</span>
-          <h3 className="text-gray-700 font-semibold mb-1">Produits</h3>
-          <p className="text-2xl font-bold">{stats.totalProducts || products.length}</p>
-        </div>
-        <div className="p-6 bg-yellow-50 shadow rounded flex flex-col items-center hover:shadow-lg transition-shadow">
-          <span className="text-yellow-500 text-3xl mb-2">💰</span>
-          <h3 className="text-gray-700 font-semibold mb-1">Retraits</h3>
-          <p className="text-2xl font-bold">{withdrawals.length}</p>
-        </div>
-        <div className="p-6 bg-purple-50 shadow rounded flex flex-col items-center hover:shadow-lg transition-shadow">
-          <span className="text-purple-500 text-3xl mb-2">🏦</span>
-          <h3 className="text-gray-700 font-semibold mb-1">Wallet</h3>
-          <p className="text-2xl font-bold">{walletBalance} XOF</p>
-        </div>
+        {[
+          { label: 'Utilisateurs', value: stats.totalUsers || users.length, icon: '👤', color: 'blue' },
+          { label: 'Produits', value: stats.totalProducts || products.length, icon: '📦', color: 'green' },
+          { label: 'Retraits', value: withdrawals.length, icon: '💰', color: 'yellow' },
+          { label: 'Wallet', value: walletBalance + ' XOF', icon: '🏦', color: 'purple' },
+        ].map((s, i) => (
+          <div key={i} className={`p-6 bg-${s.color}-50 shadow rounded flex flex-col items-center hover:shadow-lg transition-shadow`}>
+            <span className={`text-${s.color}-500 text-3xl mb-2`}>{s.icon}</span>
+            <h3 className="text-gray-700 font-semibold mb-1">{s.label}</h3>
+            <p className="text-2xl font-bold">{s.value}</p>
+          </div>
+        ))}
       </div>
 
-      {/* === Utilisateurs === */}
+      {/* === Users Table === */}
       <h2 className="text-2xl font-semibold mb-4">Utilisateurs</h2>
       <div className="overflow-x-auto mb-8">
         <table className="w-full table-auto border border-gray-200">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-4 py-2">ID</th>
-              <th className="px-4 py-2">Nom</th>
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Status</th>
+              {['ID','Nom','Email','Status'].map((h,i) => <th key={i} className="px-4 py-2">{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -210,7 +180,7 @@ const AdminDashboard = () => {
         </table>
       </div>
 
-      {/* === Produits === */}
+      {/* === Products Grid === */}
       <h2 className="text-2xl font-semibold mb-4">Produits</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
         {products.map(p => (
@@ -221,31 +191,18 @@ const AdminDashboard = () => {
               <p className="text-gray-500 text-sm">Stock : {p.stock || 'N/A'}</p>
             </div>
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
-              <button
-                onClick={() => handleOpenProductModal(p)}
-                className="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-              >
-                Modifier
-              </button>
-              <button
-                onClick={() => handleDeleteProduct(p.id)}
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-              >
-                Supprimer
-              </button>
+              <button onClick={() => openProductModal(p)} className="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">Modifier</button>
+              <button onClick={() => deleteProduct(p.id)} className="flex-1 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">Supprimer</button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* === Retraits en attente === */}
+      {/* === Retraits === */}
       <h2 className="text-2xl font-semibold mb-4">Retraits en attente</h2>
       <ul className="mb-8 space-y-2">
         {withdrawals.map(w => (
-          <li
-            key={w.id}
-            className="p-3 bg-gray-50 rounded flex justify-between items-center shadow-sm hover:bg-gray-100 transition-colors"
-          >
+          <li key={w.id} className="p-3 bg-gray-50 rounded flex justify-between items-center shadow-sm hover:bg-gray-100 transition-colors">
             <span>{w.user_name} - {w.amount} XOF</span>
             <span className="text-sm text-gray-500">{new Date(w.created_at).toLocaleDateString()}</span>
           </li>
@@ -253,71 +210,16 @@ const AdminDashboard = () => {
       </ul>
 
       {/* === Modals === */}
-      <ProductModal
-        isOpen={showProductModal}
-        onClose={() => { setShowProductModal(false); setEditingProduct(null); }}
-        onSave={handleSaveProduct}
-        product={editingProduct}
-      />
-
-      <FedapayConfigModal
-        isOpen={showFedapayModal}
-        onClose={() => setShowFedapayModal(false)}
-        onSave={handleSaveFedapayKeys}
-        currentKeys={paymentProvider}
-      />
-
-      <CommissionSettingsModal
-        isOpen={showCommissionModal}
-        onClose={() => setShowCommissionModal(false)}
-        currentRate={stats.commissionRate || 10}
-        onSave={handleSaveCommission}
-      />
-
-      <InfoModal
-        isOpen={showInfoModal.isOpen}
-        onClose={() => setShowInfoModal({ isOpen: false, title: '', message: '' })}
-        title={showInfoModal.title}
-        message={showInfoModal.message}
-      />
-
-      <ErrorModal
-        isOpen={showErrorModal.isOpen}
-        onClose={() => setShowErrorModal({ isOpen: false, title: '', message: '' })}
-        title={showErrorModal.title}
-        message={showErrorModal.message}
-      />
-
-      <WithdrawalModal
-        isOpen={showWithdrawalModal}
-        onClose={() => setShowWithdrawalModal(false)}
-        walletBalance={walletBalance}
-      />
-
-      <PlatformSettingsModal
-        isOpen={showPlatformSettingsModal}
-        onClose={() => setShowPlatformSettingsModal(false)}
-      />
-
-      <TransactionDetailsModal
-        isOpen={showTransactionModal.isOpen}
-        onClose={() => setShowTransactionModal({ isOpen: false, transactionId: null })}
-        transactionId={showTransactionModal.transactionId}
-      />
-
-      <DeleteConfirmModal
-        isOpen={showDeleteConfirm.isOpen}
-        onClose={() => setShowDeleteConfirm({ isOpen: false, onConfirm: null, message: '' })}
-        onConfirm={showDeleteConfirm.onConfirm}
-        message={showDeleteConfirm.message}
-      />
-
-      <ServiceModal
-        isOpen={showServiceModal.isOpen}
-        onClose={() => setShowServiceModal({ isOpen: false, service: null })}
-        onSave={() => fetchInitialData()}
-        service={showServiceModal.service}
-      />
+      <ProductModal isOpen={productModal.isOpen} onClose={() => setProductModal({ isOpen: false, product: null })} onSave={saveProduct} product={productModal.product} />
+      <FedapayConfigModal isOpen={fedapayModal} onClose={() => setFedapayModal(false)} onSave={saveFedapayKeys} currentKeys={paymentProvider} />
+      <CommissionSettingsModal isOpen={commissionModal} onClose={() => setCommissionModal(false)} currentRate={stats.commissionRate || 10} onSave={saveCommission} />
+      <InfoModal isOpen={infoModal.isOpen} onClose={() => setInfoModal({ isOpen: false, title: '', message: '' })} title={infoModal.title} message={infoModal.message} />
+      <ErrorModal isOpen={errorModal.isOpen} onClose={() => setErrorModal({ isOpen: false, title: '', message: '' })} title={errorModal.title} message={errorModal.message} />
+      <WithdrawalModal isOpen={withdrawalModal} onClose={() => setWithdrawalModal(false)} walletBalance={walletBalance} />
+      <PlatformSettingsModal isOpen={platformSettingsModal} onClose={() => setPlatformSettingsModal(false)} />
+      <TransactionDetailsModal isOpen={transactionModal.isOpen} onClose={() => setTransactionModal({ isOpen: false, transactionId: null })} transactionId={transactionModal.transactionId} />
+      <DeleteConfirmModal isOpen={deleteConfirm.isOpen} onClose={() => setDeleteConfirm({ isOpen: false, message: '', onConfirm: null })} onConfirm={deleteConfirm.onConfirm} message={deleteConfirm.message} />
+      <ServiceModal isOpen={serviceModal.isOpen} onClose={() => setServiceModal({ isOpen: false, service: null })} onSave={fetchInitialData} service={serviceModal.service} />
     </DashboardLayout>
   );
 };
