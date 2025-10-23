@@ -176,7 +176,7 @@ const AdminDashboard = () => {
         <div className="p-6 bg-purple-50 shadow rounded flex flex-col items-center hover:shadow-lg transition-shadow">
           <span className="text-purple-500 text-3xl mb-2">🏦</span>
           <h3 className="text-gray-700 font-semibold mb-1">Wallet</h3>
-          <p className="text-2xl font-bold">{walletBalance} €</p>
+          <p className="text-2xl font-bold">{walletBalance} XOF</p>
         </div>
       </div>
 
@@ -216,7 +216,7 @@ const AdminDashboard = () => {
           <div key={p.id} className="p-4 bg-white shadow rounded flex flex-col justify-between hover:shadow-lg transition-shadow">
             <div>
               <h3 className="font-bold text-lg mb-1">{p.name}</h3>
-              <p className="text-gray-600">Prix : {p.price} €</p>
+              <p className="text-gray-600">Prix : {p.price} XOF</p>
               <p className="text-gray-500 text-sm">Stock : {p.stock || 'N/A'}</p>
             </div>
             <div className="mt-4 flex gap-2">
@@ -232,7 +232,7 @@ const AdminDashboard = () => {
       <ul className="mb-8 space-y-2">
         {withdrawals.map(w => (
           <li key={w.id} className="p-3 bg-gray-50 rounded flex justify-between items-center shadow-sm hover:bg-gray-100 transition-colors">
-            <span>{w.user_name} - {w.amount} €</span>
+            <span>{w.user_name} - {w.amount} XOF</span>
             <span className="text-sm text-gray-500">{new Date(w.created_at).toLocaleDateString()}</span>
           </li>
         ))}
