@@ -1,45 +1,33 @@
-// src/services/api.js - VERSION FINALE UNIFIÉE ET COMPLÈTE
+// src/services/api.js
 import axios from 'axios';
+import { AUTH, ADMIN, FREELANCE, PRODUCTS, ORDERS, WITHDRAWALS, FILES, FEDAPAY, PAYMENTS, SETTINGS, CATEGORIES, TAGS, NOTIFS, CHAT, AI, AI_EXTRA, STATS, PROVIDERS } from './endpoints';
 
-// Configuration de base
-const API_BASE_URL = import.meta.env_VITE_API_URL || 'http://localhost:3001/api';
+// ===============================
+// CONFIGURATION AXIOS
+// ===============================
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-// Instance Axios configurée
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Intercepteur pour injecter le token d'authentification
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// Inject token
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('authToken');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+}, error => Promise.reject(error));
 
-// Intercepteur pour gérer les réponses et erreurs globales
+// Global response handler
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    if (error.response) {
-      const { status, data } = error.response;
-      
+  res => res,
+  err => {
+    if (err.response) {
+      const { status, data } = err.response;
       switch (status) {
-        case 400:
-          console.error('Erreur de validation:', data.error);
-          break;
+        case 400: console.error('Validation error:', data.error); break;
         case 401:
           localStorage.removeItem('authToken');
           localStorage.removeItem('userData');
@@ -49,238 +37,198 @@ api.interceptors.response.use(
           if (data.error?.includes('connexion administrateur dédié')) {
             window.dispatchEvent(new CustomEvent('adminLoginRequired'));
           }
-          console.error('Accès refusé:', data.error);
+          console.error('Access denied:', data.error);
           break;
-        case 404:
-          console.error('Ressource non trouvable:', data.error);
-          break;
-        case 409:
-          console.error('Conflit:', data.error);
-          break;
-        case 500:
-          console.error('Erreur serveur:', data.error);
-          break;
-        default:
-          console.error('Erreur inconnue:', data.error);
+        case 404: console.error('Not found:', data.error); break;
+        case 409: console.error('Conflict:', data.error); break;
+        case 500: console.error('Server error:', data.error); break;
+        default: console.error('Unknown error:', data.error);
       }
     }
-    return Promise.reject(error);
+    return Promise.reject(err);
   }
 );
 
 // ===============================
-// SERVICES AUTHENTIFICATION
+// AUTHENTIFICATION
 // ===============================
 export const authAPI = {
-  login: (credentials) => api.post('/auth/login', {
-    identifier: credentials.identifier,
-    password: credentials.password
-  }),
-  
-  superAdminLogin: (adminCredentials) => api.post('/auth/super-admin/login', {
-    firstname: adminCredentials.firstname,
-    lastname: adminCredentials.lastname,
-    phone: adminCredentials.phone,
-    password: adminCredentials.password
-  }),
-  
-  register: (userData) => api.post('/auth/register', {
-    username: userData.username,
-    firstname: userData.firstname,
-    lastname: userData.lastname,
-    phone: userData.phone,
-    email: userData.email,
-    password: userData.password,
-    role: userData.role
-  }),
-  
-  logout: () => api.post('/auth/logout'),
-  getProfile: () => api.get('/auth/profile')
+  login: (credentials) => api.post(AUTH.LOGIN, credentials),
+  superAdminLogin: (data) => api.post(AUTH.SUPER_ADMIN_LOGIN, data),
+  register: (userData) => api.post(AUTH.REGISTER, userData),
+  logout: () => api.post(AUTH.LOGOUT),
+  getProfile: () => api.get(AUTH.PROFILE),
 };
 
 // ===============================
-// SERVICES ADMINISTRATION
+// ADMINISTRATION
 // ===============================
 export const adminAPI = {
   users: {
-    list: (params = {}) => api.get('/admin/users', { params }),
-    toggleStatus: (userId, is_active) => api.patch(`/admin/users/${userId}/status`, { is_active })
+    list: (params) => api.get(ADMIN.USERS, { params }),
+    toggleStatus: (userId, is_active) => api.patch(ADMIN.USER_STATUS(userId), { is_active }),
   },
-  
   withdrawals: {
-    list: () => api.get('/admin/withdrawals'),
-    approve: (withdrawalId) => api.patch(`/admin/withdrawals/${withdrawalId}/approve`),
-    reject: (withdrawalId, rejection_reason) => api.patch(`/admin/withdrawals/${withdrawalId}/reject`, { rejection_reason })
+    list: () => api.get(ADMIN.WITHDRAWALS),
+    approve: (id) => api.patch(ADMIN.WITHDRAW_APPROVE(id)),
+    reject: (id, reason) => api.patch(ADMIN.WITHDRAW_REJECT(id), { reason }),
   },
-  
   stats: {
-    getDashboard: () => api.get('/admin/stats/dashboard'),
-    exportExcel: () => api.get('/admin/stats/export/excel', { responseType: 'blob' }),
-    exportPDF: () => api.get('/admin/stats/export/pdf', { responseType: 'blob' })
+    dashboard: () => api.get(ADMIN.STATS_DASHBOARD),
+    exportExcel: () => api.get(ADMIN.STATS_EXPORT_EXCEL, { responseType: 'blob' }),
+    exportPDF: () => api.get(ADMIN.STATS_EXPORT_PDF, { responseType: 'blob' }),
   },
-  
   commission: {
-    updateSettings: (settings) => api.put('/admin/commission/settings', settings)
+    update: (settings) => api.put(ADMIN.COMMISSION_SETTINGS, settings),
   },
-  
   logs: {
-    get: () => api.get('/admin/logs'),
-    getByAction: (actionFilter) => api.get(`/admin/logs/action/${actionFilter}`)
-  }
+    get: () => api.get(ADMIN.LOGS),
+    getByAction: (action) => api.get(ADMIN.LOGS_BY_ACTION(action)),
+  },
 };
 
 // ===============================
-// SERVICES WALLET & RETRAITS
-// ===============================
-export const walletAPI = {
-  getBalance: () => api.get('/wallet'),
-  getTransactions: () => api.get('/wallet/transactions'),
-  
-  withdrawals: {
-    create: (withdrawalData) => api.post('/withdrawals', {
-      amount: withdrawalData.amount,
-      provider_id: withdrawalData.provider_id,
-      account_number: withdrawalData.account_number
-    }),
-    getMyWithdrawals: () => api.get('/withdrawals/my'),
-    getAll: () => api.get('/admin/withdrawals/all'),
-    approve: (withdrawalId) => api.patch(`/admin/withdrawals/${withdrawalId}/approve`),
-    reject: (withdrawalId, reason) => api.patch(`/admin/withdrawals/${withdrawalId}/reject`, { reason })
-  }
-};
-
-// ===============================
-// SERVICES PAIEMENT FEDAPAY
-// ===============================
-export const fedapayAPI = {
-  setKeys: (keys) => api.post('/admin/fedapay/keys', keys),
-  getKeys: () => api.get('/admin/fedapay/keys'),
-  
-  initProductPayment: (paymentData) => api.post('/fedapay/init-payment', {
-    amount: paymentData.amount,
-    description: paymentData.description,
-    orderId: paymentData.orderId,
-    buyerId: paymentData.buyerId
-  }),
-  
-  initMissionEscrow: (escrowData) => api.post('/fedapay/init-escrow', {
-    amount: escrowData.amount,
-    missionId: escrowData.missionId,
-    buyerId: escrowData.buyerId
-  })
-};
-
-// ===============================
-// SERVICES FICHIERS
-// ===============================
-export const filesAPI = {
-  upload: (formData) => api.post('/files/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  
-  getSignedUrl: (fileId) => api.get(`/files/${fileId}/signed-url`),
-  getPublicUrl: (fileId) => api.get(`/files/${fileId}/public-url`),
-  delete: (fileId) => api.delete(`/files/${fileId}`)
-};
-
-// ===============================
-// SERVICES FREELANCE/MISSIONS
+// FREELANCE / MISSIONS
 // ===============================
 export const freelanceAPI = {
   missions: {
-    create: (missionData) => api.post('/freelance/missions', missionData),
-    list: (params = {}) => api.get('/freelance/missions', { params }),
-    getById: (id) => api.get(`/freelance/missions/${id}`),
-    apply: (applicationData) => api.post('/freelance/missions/apply', applicationData),
-    acceptApplication: (applicationId) => api.post('/freelance/missions/accept-application', { application_id: applicationId }),
-    deliverWork: (deliveryData) => api.post('/freelance/missions/deliver', deliveryData),
-    validateDelivery: (deliveryId) => api.post('/freelance/missions/validate-delivery', { delivery_id: deliveryId })
+    list: (params) => api.get(FREELANCE.MISSIONS, { params }),
+    getById: (id) => api.get(FREELANCE.MISSION_BY_ID(id)),
+    create: (data) => api.post(FREELANCE.MISSIONS, data),
+    apply: (data) => api.post(FREELANCE.APPLY, data),
+    acceptApplication: (applicationId) => api.post(FREELANCE.ACCEPT_APPLICATION, { application_id: applicationId }),
+    deliver: (data) => api.post(FREELANCE.DELIVER, data),
+    validateDelivery: (deliveryId) => api.post(FREELANCE.VALIDATE_DELIVERY, { delivery_id: deliveryId }),
   },
-  
   applications: {
-    getMyApplications: () => api.get('/freelance/applications/my'),
-    getByMission: (missionId) => api.get(`/freelance/applications/mission/${missionId}`)
-  }
+    my: () => api.get(FREELANCE.MY_APPLICATIONS),
+    byMission: (missionId) => api.get(FREELANCE.APPLICATIONS_BY_MISSION(missionId)),
+  },
 };
 
 // ===============================
-// SERVICES COMMANDES
-// ===============================
-export const ordersAPI = {
-  create: (orderData) => api.post('/orders', orderData),
-  getMyOrders: () => api.get('/orders/my'),
-  getMySales: () => api.get('/orders/sales'),
-  updateStatus: (orderId, status) => api.patch(`/orders/${orderId}/status`, { status })
-};
-
-// ===============================
-// SERVICES NOTIFICATIONS
-// ===============================
-export const notificationsAPI = {
-  getMyNotifications: () => api.get('/notifications'),
-  markAsRead: (notificationId) => api.patch(`/notifications/${notificationId}/read`),
-  markAllAsRead: () => api.patch('/notifications/read-all'),
-  delete: (notificationId) => api.delete(`/notifications/${notificationId}`),
-  
-  sendBulk: (notificationData) => api.post('/admin/notifications/bulk', notificationData),
-  getHistory: () => api.get('/admin/notifications/history'),
-  deleteAdmin: (notificationId) => api.delete(`/admin/notifications/${notificationId}`),
-  getUserStats: () => api.get('/admin/notifications/user-stats')
-};
-
-// ===============================
-// SERVICES IA ASSISTANT
-// ===============================
-export const aiAssistantAPI = {
-  sendMessage: (messageData) => api.post('/ai/assistant/message', {
-    message: messageData.message,
-    context: messageData.context
-  }),
-  
-  generateContent: (contentData) => api.post('/ai/assistant/generate', {
-    type: contentData.type,
-    parameters: contentData.parameters
-  }),
-  
-  conversations: {
-    list: (params = {}) => api.get('/ai/assistant/conversations', { params }),
-    delete: (conversationId) => api.delete(`/ai/assistant/conversations/${conversationId}`)
-  }
-};
-
-// ===============================
-// SERVICES PRODUITS
+// PRODUITS
 // ===============================
 export const productsAPI = {
-  getAll: (params = {}) => api.get('/products', { params }),
-  getById: (id) => api.get(`/products/${id}`),
-  create: (productData) => api.post('/products', productData),
-  update: (id, productData) => api.put(`/products/${id}`, productData),
-  delete: (id) => api.delete(`/products/${id}`),
-  getMyProducts: () => api.get('/products/my'),
-  search: (query, params = {}) => api.get('/products/search', { params: { q: query, ...params } })
+  all: (params) => api.get(PRODUCTS.BASE, { params }),
+  getById: (id) => api.get(PRODUCTS.BY_ID(id)),
+  my: () => api.get(PRODUCTS.MY),
+  search: (query, params) => api.get(PRODUCTS.SEARCH, { params: { q: query, ...params } }),
 };
 
 // ===============================
-// SERVICES STATISTIQUES
+// COMMANDES
+// ===============================
+export const ordersAPI = {
+  all: () => api.get(ORDERS.BASE),
+  my: () => api.get(ORDERS.MY),
+  sales: () => api.get(ORDERS.SALES),
+  updateStatus: (id, status) => api.patch(ORDERS.UPDATE_STATUS(id), { status }),
+};
+
+// ===============================
+// RETRAITS / WALLET
+// ===============================
+export const withdrawalsAPI = {
+  all: () => api.get(WITHDRAWALS.BASE),
+  my: () => api.get(WITHDRAWALS.MY),
+  adminAll: () => api.get(WITHDRAWALS.ADMIN_ALL),
+};
+
+// ===============================
+// FICHIERS
+// ===============================
+export const filesAPI = {
+  upload: (formData) => api.post(FILES.UPLOAD, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  signedUrl: (id) => api.get(FILES.SIGNED_URL(id)),
+  publicUrl: (id) => api.get(FILES.PUBLIC_URL(id)),
+  delete: (id) => api.delete(FILES.DELETE(id)),
+};
+
+// ===============================
+// PAIEMENT FEDAPAY
+// ===============================
+export const fedapayAPI = {
+  adminKeys: () => api.get(FEDAPAY.ADMIN_KEYS),
+  setKeys: (data) => api.post(FEDAPAY.ADMIN_KEYS, data),
+  initPayment: (data) => api.post(FEDAPAY.INIT_PAYMENT, data),
+  initEscrow: (data) => api.post(FEDAPAY.INIT_ESCROW, data),
+};
+
+// ===============================
+// TRANSACTIONS / PAYMENTS
+// ===============================
+export const paymentsAPI = {
+  transactions: () => api.get(PAYMENTS.TRANSACTIONS),
+  getById: (id) => api.get(PAYMENTS.BY_ID(id)),
+  init: (data) => api.post(PAYMENTS.INIT, data),
+  verify: (data) => api.post(PAYMENTS.VERIFY, data),
+};
+
+// ===============================
+// NOTIFICATIONS
+// ===============================
+export const notificationsAPI = {
+  my: () => api.get(NOTIFS.MY),
+  markRead: (id) => api.patch(NOTIFS.MARK_READ(id)),
+  markAllRead: () => api.patch(NOTIFS.MARK_ALL_READ),
+  delete: (id) => api.delete(NOTIFS.DELETE(id)),
+  adminBulk: (data) => api.post(NOTIFS.ADMIN_BULK, data),
+  adminHistory: () => api.get(NOTIFS.ADMIN_HISTORY),
+  adminDelete: (id) => api.delete(NOTIFS.ADMIN_DELETE(id)),
+  userStats: () => api.get(NOTIFS.USER_STATS),
+};
+
+// ===============================
+// CHAT / MESSAGERIE
+// ===============================
+export const chatAPI = {
+  conversations: () => api.get(CHAT.CONVERSATIONS),
+  messages: (convId) => api.get(CHAT.MESSAGES(convId)),
+  sendMessage: (data) => api.post(CHAT.SEND_MESSAGE, data),
+};
+
+// ===============================
+// IA ASSISTANT
+// ===============================
+export const aiAPI = {
+  sendMessage: (data) => api.post(AI.MESSAGE, data),
+  generate: (data) => api.post(AI.GENERATE, data),
+  conversations: {
+    list: (params) => api.get(AI.CONVERSATIONS, { params }),
+    delete: (id) => api.delete(AI.CONVERSATION_DELETE(id)),
+  },
+};
+
+// Extensions IA
+export const aiExtraAPI = {
+  toolsList: () => api.get(AI_EXTRA.TOOLS_LIST),
+  savePrompt: (data) => api.post(AI_EXTRA.SAVE_PROMPT, data),
+};
+
+// ===============================
+// STATISTIQUES
 // ===============================
 export const statsAPI = {
-  getAdminStats: () => api.get('/stats/admin'),
-  getUserStats: () => api.get('/stats/user'),
-  exportExcel: () => api.get('/stats/export/excel', { responseType: 'blob' }),
-  exportPDF: () => api.get('/stats/export/pdf', { responseType: 'blob' })
+  admin: () => api.get(STATS.ADMIN),
+  user: () => api.get(STATS.USER),
+  exportExcel: () => api.get(STATS.EXPORT_EXCEL, { responseType: 'blob' }),
+  exportPDF: () => api.get(STATS.EXPORT_PDF, { responseType: 'blob' }),
 };
 
 // ===============================
-// SERVICES PROVIDERS DE PAIEMENT
+// FOURNISSEURS DE PAIEMENT
 // ===============================
-export const paymentProvidersAPI = {
-  getActive: () => api.get('/payment-providers/active'),
-  
-  getAll: () => api.get('/admin/payment-providers'),
-  create: (providerData) => api.post('/admin/payment-providers', providerData),
-  update: (id, providerData) => api.put(`/admin/payment-providers/${id}`, providerData),
-  delete: (id) => api.delete(`/admin/payment-providers/${id}`)
+export const providersAPI = {
+  active: () => api.get(PROVIDERS.ACTIVE),
+  adminAll: () => api.get(PROVIDERS.ADMIN_ALL),
+  adminById: (id) => api.get(PROVIDERS.ADMIN_BY_ID(id)),
+  create: (data) => api.post(PROVIDERS.ADMIN_ALL, data),
+  update: (id, data) => api.put(PROVIDERS.ADMIN_BY_ID(id), data),
+  delete: (id) => api.delete(PROVIDERS.ADMIN_BY_ID(id)),
 };
 
+// ===============================
+// EXPORT DEFAULT
+// ===============================
 export default api;
