@@ -1,5 +1,3 @@
-// src/services/endpoints.js
-
 // ===============================
 // AUTHENTIFICATION
 // ===============================
@@ -29,6 +27,8 @@ export const ADMIN = {
   COMMISSION_SETTINGS: '/admin/commission/settings',
   LOGS: '/admin/logs',
   LOGS_BY_ACTION: (action) => `/admin/logs/action/${action}`,
+
+  SETTINGS: '/admin/settings', // ✅ ajouté pour PlatformSettingsModal
 };
 
 // ===============================
