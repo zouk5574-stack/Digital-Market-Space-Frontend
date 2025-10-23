@@ -8,7 +8,7 @@ import ErrorModal from '../../components/ui/ErrorModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import ProductModal from '../../components/admin/ProductModal';
 import ServiceModal from '../../components/modals/ServiceModal';
-import WithdrawalModal from '../../components/admin/WithdrawalModal';
+import withdrawalModal from '../../components/admin/withdrawalModal';
 import { productsAPI, ordersAPI, freelanceAPI, statsAPI } from '../../services/api';
 
 const SellerDashboard = () => {
@@ -20,7 +20,7 @@ const SellerDashboard = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null, onConfirm: null });
   const [productModal, setProductModal] = useState({ isOpen: false, product: null });
   const [serviceModal, setServiceModal] = useState({ isOpen: false, service: null });
-  const [withdrawalModal, setWithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
+  const [withdrawalModal, setwithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
 
   // Data
   const [stats, setStats] = useState({});
