@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStatsApi, useOrdersApi, useProductsApi, useFreelanceApi } from '../../hooks/useApi';
+import { FEDAPAY } from '../../services/endpoints';
+import api from '../../services/api';
 import Button from '../../components/ui/Button';
 import StatsCard from '../../components/dashboard/StatsCard';
 import ProductCard from '../../components/products/ProductCard';
@@ -26,18 +28,63 @@ const BuyerDashboard = () => {
   const products = productsStates.products.data || [];
   const missions = freelanceStates.missions.data || [];
 
-return (
+  // 🔹 Fonction achat produit → redirection Fedapay
+  const handleBuy = async (product) => {
+    try {
+      const res = await api.post(FEDAPAY.PAY_PRODUCT, { product_id: product.id });
+      if (res.data?.payment_url) {
+        window.location.href = res.data.payment_url; // redirige vers Fedapay
+      } else {
+        alert("Erreur : lien de paiement introuvable.");
+      }
+    } catch (err) {
+      console.error('Erreur paiement :', err);
+      alert('Une erreur est survenue lors du paiement.');
+    }
+  };
+
+  // 🔹 Valider une livraison (Escrow)
+  const handleValidateDelivery = async (mission) => {
+    try {
+      await api.put(`/freelance/missions/${mission.id}/validate-delivery`);
+      alert("Livraison validée ✅ — les fonds seront libérés au vendeur.");
+      freelanceActions.getMyMissions();
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la validation de la livraison.");
+    }
+  };
+
+  // 🔹 Créer une mission (avec Escrow à la création)
+  const handleCreateMission = async (missionData) => {
+    try {
+      const res = await api.post('/freelance/missions', missionData);
+      if (res.data?.payment_url) {
+        window.location.href = res.data.payment_url; // Fedapay escrow
+      } else {
+        alert('Mission créée sans lien de paiement.');
+      }
+      setShowMissionModal(false);
+      freelanceActions.getMyMissions();
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la création de la mission.");
+    }
+  };
+
+  return (
     <div className="min-h-screen bg-gray-50">
+      {/* ===== HEADER ===== */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Dashboard Acheteur</h1>
             <p className="mt-2 text-sm md:text-base text-gray-500">
-              Achetez des produits digitaux et créez des missions freelance
+              Achetez des produits digitaux et gérez vos missions freelance.
             </p>
           </div>
           <nav className="border-b border-gray-200">
-            <div className="-mb-px flex space-x-6">
+            <div className="-mb-px flex space-x-6 overflow-x-auto">
               {[
                 { id: 'overview', name: 'Vue Générale' },
                 { id: 'products', name: 'Produits Digitaux' },
@@ -61,7 +108,9 @@ return (
         </div>
       </header>
 
-<main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      {/* ===== CONTENU ===== */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* VUE GÉNÉRALE */}
         {activeTab === 'overview' && (
           <section className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -70,79 +119,83 @@ return (
               <StatsCard title="Commandes Validées" value={stats.successfulPurchasesCount} icon="✅" color="green" />
               <StatsCard title="Missions Créées" value={missions.length} icon="🎯" color="orange" />
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white shadow rounded-lg p-4 sm:p-6 overflow-x-auto">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Dernières Commandes</h3>
-                <div className="space-y-3">
-                  {orders.slice(0, 5).map(order => (
-                    <div key={order.id} className="flex justify-between items-center py-2 border-b last:border-b-0">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">Commande #{order.id.slice(0, 8)}</span>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                          order.status === 'pending_payment' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </div>
-                      <span className="font-medium">{order.total_price} XOF</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white shadow rounded-lg p-4 sm:p-6 overflow-x-auto">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Missions Actives</h3>
-                  <Button onClick={() => setShowMissionModal(true)} size="small">
-                    + Nouvelle Mission
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  {missions.filter(m => m.status !== 'completed').slice(0, 5).map(mission => (
-                    <div key={mission.id} className="flex justify-between items-center py-2 border-b last:border-b-0">
-                      <span className="text-sm font-medium">{mission.title}</span>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        mission.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                        mission.status === 'awaiting_validation' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {mission.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
           </section>
         )}
 
-{activeTab === 'products' && (
+        {/* PRODUITS */}
+        {activeTab === 'products' && (
           <section className="space-y-6">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Produits Digitaux Disponibles</h2>
-              <p className="text-gray-600 mt-1">Achetez des produits digitaux instantanément</p>
+              <p className="text-gray-600 mt-1">Faites défiler pour découvrir les produits à acheter.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map(product => (
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onBuy={() => console.log('Acheter:', product)}
+                  onBuy={() => handleBuy(product)}
                 />
               ))}
             </div>
           </section>
         )}
 
-{activeTab === 'missions' && (
+        {/* COMMANDES */}
+        {activeTab === 'orders' && (
+          <section>
+            <div className="bg-white shadow rounded-lg overflow-x-auto">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">Mes Achats ({orders.length})</h3>
+              </div>
+              <div className="divide-y divide-gray-200">
+                {orders.map(order => (
+                  <div key={order.id} className="p-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div>
+                        <h4 className="text-lg font-medium text-gray-900">Commande #{order.id.slice(0, 8)}</h4>
+                        <div className="mt-2 space-y-1 text-sm text-gray-600">
+                          <div>Total: {order.total_price} XOF</div>
+                          <div>Date: {new Date(order.created_at).toLocaleDateString()}</div>
+                        </div>
+                      </div>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        order.status === 'pending_payment' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
+
+                    {order.status === 'completed' && (
+                      <div className="mt-3">
+                        {order.order_items?.map(item => (
+                          <Button
+                            key={item.id}
+                            variant="primary"
+                            size="small"
+                            onClick={() => window.open(item.products?.file_url, '_blank')}
+                          >
+                            Télécharger {item.products?.title}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* MISSIONS */}
+        {activeTab === 'missions' && (
           <section className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Mes Missions Freelance</h2>
-                <p className="text-gray-600 mt-1">Créez et gérez vos missions pour les vendeurs</p>
+                <p className="text-gray-600 mt-1">Créez et gérez vos missions avec Escrow intégré.</p>
               </div>
               <Button onClick={() => setShowMissionModal(true)}>+ Créer une Mission</Button>
             </div>
@@ -171,92 +224,29 @@ return (
                           </span>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
-                        {mission.status === 'awaiting_validation' && mission.deliveries?.[0] && (
-                          <Button variant="primary" size="small" onClick={() => console.log('Valider livraison:', mission)}>Valider Livraison</Button>
-                        )}
-                        <Button variant="secondary" size="small">Voir Détails</Button>
-                      </div>
-                    </div>
 
-                    {/* Applications */}
-                    {mission.applications && mission.applications.length > 0 && (
-                      <div className="mt-4">
-                        <p className="text-sm font-medium text-gray-700">
-                          Candidatures ({mission.applications.length})
-                        </p>
-                        <div className="mt-2 space-y-2">
-                          {mission.applications.slice(0, 3).map(app => (
-                            <div key={app.id} className="flex justify-between items-center text-sm">
-                              <span>Proposition: {app.proposed_price} XOF</span>
-                              {mission.status === 'open' && (
-                                <Button variant="primary" size="small" onClick={() => console.log('Accepter candidature:', app)}>Accepter</Button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                      {mission.status === 'awaiting_validation' && (
+                        <Button
+                          variant="primary"
+                          size="small"
+                          onClick={() => handleValidateDelivery(mission)}
+                        >
+                          Valider Livraison
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           </section>
         )}
-
-{activeTab === 'orders' && (
-          <section>
-            <div className="bg-white shadow rounded-lg overflow-x-auto">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Mes Achats ({orders.length})</h3>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {orders.map(order => (
-                  <div key={order.id} className="p-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                      <div>
-                        <h4 className="text-lg font-medium text-gray-900">Commande #{order.id.slice(0, 8)}</h4>
-                        <div className="mt-2 space-y-1 text-sm text-gray-600">
-                          <div>Total: {order.total_price} XOF</div>
-                          <div>Date: {new Date(order.created_at).toLocaleDateString()}</div>
-                        </div>
-                      </div>
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        order.status === 'delivered' ? 'bg-blue-100 text-blue-800' :
-                        order.status === 'pending_payment' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {order.status}
-                      </span>
-                    </div>
-
-                    {order.order_items && (
-                      <div className="mt-4 space-y-1 text-sm text-gray-700">
-                        {order.order_items.map(item => (
-                          <div key={item.id} className="flex justify-between">
-                            <span>{item.products?.title || 'Produit'}</span>
-                            <span>{item.quantity} x {item.price} XOF</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-</main>
+      </main>
 
       <MissionModal
         isOpen={showMissionModal}
         onClose={() => setShowMissionModal(false)}
-        onCreate={(missionData) => {
-          console.log('Créer mission:', missionData);
-          setShowMissionModal(false);
-        }}
+        onCreate={handleCreateMission}
       />
     </div>
   );
