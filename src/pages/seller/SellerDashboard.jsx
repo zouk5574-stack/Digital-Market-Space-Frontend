@@ -20,7 +20,7 @@ const SellerDashboard = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null, onConfirm: null });
   const [productModal, setProductModal] = useState({ isOpen: false, product: null });
   const [serviceModal, setServiceModal] = useState({ isOpen: false, service: null });
-  const [withdrawalModal, setwithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
+  const [withdrawalModal, setWithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
 
   // Data
   const [stats, setStats] = useState({});
