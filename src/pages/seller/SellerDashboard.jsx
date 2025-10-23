@@ -8,7 +8,7 @@ import ErrorModal from '../../components/ui/ErrorModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import ProductModal from '../../components/admin/ProductModal';
 import ServiceModal from '../../components/modals/ServiceModal';
-import WithdrawalModal from '../../components/admin/withdrawalModal';
+import withdrawalModal from '../../components/admin/withdrawalModal';
 import { productsAPI, ordersAPI, freelanceAPI, statsAPI } from '../../services/api';
 
 const SellerDashboard = () => {
