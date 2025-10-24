@@ -1,14 +1,13 @@
 // src/components/freelance/MissionCard.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { useFreelanceApi } from '../../hooks/useApi';
+import { freelanceAPI } from '../../services/api'; // ✅ Import direct
 import Button from '../ui/Button';
 import Loader from '../ui/Loader';
 import ApplicationModal from './ApplicationModal';
 
 const MissionCard = ({ mission, showActions = true }) => {
   const { user } = useAuth();
-  const { actions: freelanceActions } = useFreelanceApi();
   const [loading, setLoading] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
 
@@ -19,12 +18,11 @@ const MissionCard = ({ mission, showActions = true }) => {
   const handleAcceptApplication = async (applicationId) => {
     setLoading(true);
     try {
-      // Cette action va initier l'escrow Fedapay
-      const result = await freelanceActions.acceptApplication(applicationId);
+      // ✅ CORRECT : utilise freelanceAPI.missions.acceptApplication()
+      const result = await freelanceAPI.missions.acceptApplication(applicationId);
       
-      if (result.checkout_url) {
-        // Redirection vers Fedapay pour sécuriser les fonds
-        window.location.href = result.checkout_url;
+      if (result.data?.checkout_url) {
+        window.location.href = result.data.checkout_url;
       }
     } catch (error) {
       console.error('Erreur acceptation candidature:', error);
@@ -34,15 +32,30 @@ const MissionCard = ({ mission, showActions = true }) => {
     }
   };
 
-  const handleValidateDelivery = async (missionId) => {
+  const handleValidateDelivery = async (deliveryId) => {
     setLoading(true);
     try {
-      // Déblocage des fonds escrow vers le vendeur
-      await freelanceActions.validateDelivery(missionId);
+      // ✅ CORRECT : utilise freelanceAPI.missions.validateDelivery()
+      await freelanceAPI.missions.validateDelivery(deliveryId);
       alert('Livraison validée ! Les fonds ont été transférés au vendeur.');
     } catch (error) {
       console.error('Erreur validation livraison:', error);
       alert('Erreur lors de la validation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApplyToMission = async (applicationData) => {
+    setLoading(true);
+    try {
+      // ✅ CORRECT : utilise freelanceAPI.missions.apply()
+      await freelanceAPI.missions.apply(applicationData);
+      setShowApplyModal(false);
+      alert('Candidature envoyée avec succès !');
+    } catch (error) {
+      console.error('Erreur candidature:', error);
+      alert('Erreur lors de l\'envoi de la candidature');
     } finally {
       setLoading(false);
     }
@@ -142,7 +155,7 @@ const MissionCard = ({ mission, showActions = true }) => {
             {isOwner && mission.status === 'awaiting_validation' && (
               <Button
                 variant="success"
-                onClick={() => handleValidateDelivery(mission.id)}
+                onClick={() => handleValidateDelivery(mission.delivery_id)} // ✅ Correction: delivery_id au lieu de mission.id
                 disabled={loading}
                 fullWidth
               >
@@ -182,16 +195,7 @@ const MissionCard = ({ mission, showActions = true }) => {
         isOpen={showApplyModal}
         onClose={() => setShowApplyModal(false)}
         mission={mission}
-        onApply={async (applicationData) => {
-          try {
-            await freelanceActions.applyToMission(applicationData);
-            setShowApplyModal(false);
-            alert('Candidature envoyée avec succès !');
-          } catch (error) {
-            console.error('Erreur candidature:', error);
-            alert('Erreur lors de l\'envoi de la candidature');
-          }
-        }}
+        onApply={handleApplyToMission} // ✅ Utilisation de la méthode corrigée
       />
     </>
   );
