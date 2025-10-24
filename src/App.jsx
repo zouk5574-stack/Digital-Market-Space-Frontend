@@ -21,8 +21,8 @@ import BuyerDashboard from './pages/buyer/BuyerDashboard';
 // ✅ Paiement
 import PaymentCallback from './pages/payment/PaymentCallback';
 
-// ✅ STYLE GLOBAL UNIFIÉ (remplace les 3 fichiers)
-import './styles/Global.css';
+// ✅ STYLE GLOBAL UNIQUE (point d'entrée)
+import './styles/index.css';
 
 /* ============================
    🔒 Route privée standard
@@ -47,13 +47,12 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 /* ============================
-   🎨 Layout global amélioré
+   🎨 Layout global
 ============================ */
 const Layout = ({ children }) => {
   const location = useLocation();
   const noLayoutRoutes = ['/login', '/register', '/payment/callback'];
 
-  // ❌ Cache Navbar et Footer sur login/register et callback paiement
   const hideLayout = noLayoutRoutes.includes(location.pathname);
 
   return (
@@ -68,7 +67,7 @@ const Layout = ({ children }) => {
 };
 
 /* ============================
-   🧭 Routes principales optimisées
+   🧭 Routes principales
 ============================ */
 const AppRoutes = () => (
   <Layout>
