@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import { withdrawalsAPI } from '../../services/api'; // ✅ Correction : import direct
+import { withdrawalsAPI } from '../../services/api'; // ✅ Import direct
 
 const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }) => {
   const [formData, setFormData] = useState({
@@ -14,7 +14,11 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
   const handleSubmit = async (e) => {
     e.preventDefault();
     const amountNumber = Number(formData.amount);
-    if (!amountNumber || amountNumber > walletBalance) return;
+    
+    if (!amountNumber || amountNumber > walletBalance) {
+      alert('Montant invalide ou supérieur au solde disponible');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -25,10 +29,10 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
         account_number: formData.account_number
       });
 
-      // Mise à jour immédiate du solde dans le dashboard
+      // Mise à jour immédiate du solde
       if (onWithdrawalSuccess) onWithdrawalSuccess(amountNumber);
 
-      // Redirection vers Fedapay si l'URL est fournie par l'API
+      // Redirection vers Fedapay
       if (res?.data?.payment_url) {
         window.location.href = res.data.payment_url;
       } else {
@@ -38,7 +42,7 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
       onClose();
     } catch (err) {
       console.error('Erreur retrait:', err);
-      alert('Impossible de créer la demande de retrait.');
+      alert('Impossible de créer la demande de retrait: ' + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);
     }
@@ -58,7 +62,7 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
 
         <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
           <p className="text-sm text-blue-700"><strong>Solde disponible:</strong> {walletBalance} XOF</p>
-          <p className="text-xs text-blue-600 mt-1">Ce solde provient des commissions plateforme et des ventes de vos produits digitaux</p>
+          <p className="text-xs text-blue-600 mt-1">Ce solde représente les revenus issus de ventes de vos produits digitaux et de l'accomplissement de vos missions freelances. BON COURAGE !✨</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -90,8 +94,14 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>Annuler</Button>
-            <Button type="submit" variant="primary" disabled={loading || !formData.amount || formData.amount > walletBalance}>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
+              Annuler
+            </Button>
+            <Button 
+              type="submit" 
+              variant="primary" 
+              disabled={loading || !formData.amount || !formData.account_number || formData.amount > walletBalance}
+            >
               {loading ? 'Traitement...' : 'Demander le Retrait'}
             </Button>
           </div>
