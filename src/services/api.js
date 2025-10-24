@@ -217,34 +217,34 @@ export const paymentsAPI = {
 // NOTIFICATIONS
 // ===============================
 export const notificationsAPI = {
-  my: () => api.get(NOTIFS.MY),
-  markRead: (id) => api.patch(NOTIFS.MARK_READ(id)),
-  markAllRead: () => api.patch(NOTIFS.MARK_ALL_READ),
-  delete: (id) => api.delete(NOTIFS.DELETE(id)),
-  adminBulk: (data) => api.post(NOTIFS.ADMIN_BULK, data),
-  adminHistory: () => api.get(NOTIFS.ADMIN_HISTORY),
-  adminDelete: (id) => api.delete(NOTIFS.ADMIN_DELETE(id)),
-  userStats: () => api.get(NOTIFS.USER_STATS),
+  my: () => api.get('/notifications'),
+  markRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllRead: () => api.patch('/notifications/read-all'),
+  delete: (id) => api.delete(`/notification/${id}`),
+  adminBulk: (data) => api.post('/admin/notifications/bulk', data),
+  adminHistory: () => api.get('/admin/notifications/history'),
+  adminDelete: (id) => api.delete(`/admin/notifications/${id}`),
+  userStats: () => api.get('/admin/notifications/user-stats'),
 };
 
 // ===============================
 // CHAT / MESSAGERIE
 // ===============================
 export const chatAPI = {
-  conversations: () => api.get(CHAT.CONVERSATIONS),
-  messages: (convId) => api.get(CHAT.MESSAGES(convId)),
-  sendMessage: (data) => api.post(CHAT.SEND_MESSAGE, data),
+  conversations: () => api.get('/chat/conversations'),
+  messages: (convId) => api.get(`/chat/conversations/${convId}/messages`),
+  sendMessage: (data) => api.post('/chat/message/send', data),
 };
 
 // ===============================
 // IA ASSISTANT
 // ===============================
 export const aiAPI = {
-  sendMessage: (data) => api.post(AI.MESSAGE, data),
-  generate: (data) => api.post(AI.GENERATE, data),
+  sendMessage: (data) => api.post('/ai/assistant/message', data),
+  generate: (data) => api.post('/ai/assistant/generate', data),
   conversations: {
-    list: (params) => api.get(AI.CONVERSATIONS, { params }),
-    delete: (id) => api.delete(AI.CONVERSATION_DELETE(id)),
+    list: (params) => api.get('/ai/assistant/conversations', { params }),
+    delete: (id) => api.delete(`/ai/assistant/conversation/${id}`),
   },
 };
 
@@ -252,50 +252,50 @@ export const aiAPI = {
 // IA EXTRA
 // ===============================
 export const aiExtraAPI = {
-  toolsList: () => api.get(AI_EXTRA.TOOLS_LIST),
-  savePrompt: (data) => api.post(AI_EXTRA.SAVE_PROMPT, data),
+  toolsList: () => api.get('/ai/assistant/tools'),
+  savePrompt: (data) => api.post('/ai/assistant/prompt/save', data),
 };
 
 // ===============================
 // STATISTIQUES
 // ===============================
 export const statsAPI = {
-  admin: () => api.get(STATS.ADMIN),
-  user: () => api.get(STATS.USER),
-  exportExcel: () => api.get(STATS.EXPORT_EXCEL, { responseType: 'blob' }),
-  exportPDF: () => api.get(STATS.EXPORT_PDF, { responseType: 'blob' }),
+  admin: () => api.get('/stats/admin'),
+  user: () => api.get('/stats/user'),
+  exportExcel: () => api.get('/stats/export/exel', { responseType: 'blob' }),
+  exportPDF: () => api.get('/stats/export/pdf', { responseType: 'blob' }),
 };
 
 // ===============================
 // FOURNISSEURS DE PAIEMENT
 // ===============================
 export const providersAPI = {
-  active: () => api.get(PROVIDERS.ACTIVE),
-  adminAll: () => api.get(PROVIDERS.ADMIN_ALL),
-  adminById: (id) => api.get(PROVIDERS.ADMIN_BY_ID(id)),
-  create: (data) => api.post(PROVIDERS.ADMIN_ALL, data),
-  update: (id, data) => api.put(PROVIDERS.ADMIN_BY_ID(id), data),
-  delete: (id) => api.delete(PROVIDERS.ADMIN_BY_ID(id)),
+  active: () => api.get('/payment-providers/active'),
+  adminAll: () => api.get('/admin/payment-providers'),
+  adminById: (id) => api.get(`/admin/payment-providers/${id}`),
+  create: (data) => api.post('/admin/payment-providers', data),
+  update: (id, data) => api.put(`/admin/payment-providers/${id}`, data),
+  delete: (id) => api.delete(`/admin/payment-providers/${id}`),
 };
 
 // ===============================
 // CATÉGORIES
 // ===============================
 export const categoriesAPI = {
-  all: (params) => api.get(CATEGORIES.BASE, { params }),
-  getById: (id) => api.get(CATEGORIES.BY_ID(id)),
-  create: (data) => api.post(CATEGORIES.BASE, data),
-  update: (id, data) => api.put(CATEGORIES.BY_ID(id), data),
-  delete: (id) => api.delete(CATEGORIES.BY_ID(id)),
+  all: (params) => api.get('/categories', { params }),
+  getById: (id) => api.get(`/categories/${id}`),
+  create: (data) => api.post('/categories', data),
+  update: (id, data) => api.put(`/categories/${id}`, data),
+  delete: (id) => api.delete(`/categories/${id}`),
 };
 
 // ===============================
 // TAGS
 // ===============================
 export const tagsAPI = {
-  all: (params) => api.get(TAGS.BASE, { params }),
-  create: (data) => api.post(TAGS.BASE, data),
-  delete: (id) => api.delete(`${TAGS.BASE}/${id}`),
+  all: (params) => api.get('/tags', { params }),
+  create: (data) => api.post('/tags', data),
+  delete: (id) => api.delete(`${'/tags'}/${id}`),
 };
 
 // ===============================
