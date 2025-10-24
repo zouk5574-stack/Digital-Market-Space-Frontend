@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { categoriesAPI } from '../../services/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import CategoryModal from './CategoryModal';
 import { 
   Box, 
   Button, 
@@ -19,45 +18,41 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material';
-import { Edit, Delete, Add } from '@mui/icons-material';
+import { Edit, Delete, Add, Category } from '@mui/icons-material';
+import CategoryModal from './CategoryModal';
 
 /**
- * Composant de gestion des catégories (Admin)
- * Utilise les endpoints CATEGORIES.BASE et CATEGORIES.BY_ID
- * Relation frontend-backend: 
- * - GET /categories → Liste des catégories
- * - POST /categories → Création catégorie  
- * - PUT /categories/:id → Modification catégorie
- * - DELETE /categories/:id → Suppression catégorie
+ * Composant de gestion des catégories (Admin) - Version complète
+ * Intégration totale avec le modal automatique
  */
 const CategoryManager = () => {
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // 🔄 Récupération des catégories - Utilise CATEGORIES.BASE
+  // 🔄 Récupération des catégories
   const { 
     data: categories = [], 
     isLoading, 
-    error 
+    error,
+    refetch
   } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoriesAPI.all(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  // 🗑️ Mutation suppression - Utilise CATEGORIES.BY_ID
+  // 🗑️ Mutation suppression
   const deleteMutation = useMutation({
     mutationFn: (id) => categoriesAPI.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['categories']);
-      // 🎯 Réinitialisation après suppression
       setSelectedCategory(null);
     },
   });
 
   const handleDelete = (category) => {
-    if (window.confirm(`Supprimer la catégorie "${category.name}" ?`)) {
+    if (window.confirm(`Supprimer la catégorie "${category.name}" ? Cette action est irréversible.`)) {
       deleteMutation.mutate(category.id);
     }
   };
@@ -72,80 +67,129 @@ const CategoryManager = () => {
     setShowModal(true);
   };
 
+  const handleModalClose = () => {
+    setShowModal(false);
+    setSelectedCategory(null);
+  };
+
+  // Statistiques automatiques
+  const stats = {
+    total: categories.length,
+    active: categories.filter(cat => cat.is_active).length,
+    inactive: categories.filter(cat => !cat.is_active).length,
+  };
+
   if (isLoading) return (
-    <Box display="flex" justifyContent="center" p={3}>
-      <CircularProgress />
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box textAlign="center">
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Chargement des catégories...
+        </Typography>
+      </Box>
     </Box>
   );
 
   if (error) return (
-    <Alert severity="error" sx={{ m: 2 }}>
-      Erreur lors du chargement des catégories: {error.message}
-    </Alert>
+    <Box p={3}>
+      <Alert 
+        severity="error" 
+        action={
+          <Button color="inherit" size="small" onClick={() => refetch()}>
+            Réessayer
+          </Button>
+        }
+      >
+        Erreur lors du chargement des catégories: {error.message}
+      </Alert>
+    </Box>
   );
 
   return (
     <Box p={3}>
-      <Card elevation={3}>
-        <Box p={3}>
-          {/* En-tête avec bouton création */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h4" component="h1">
-              Gestion des Catégories
-            </Typography>
-            <Button 
-              variant="contained" 
-              startIcon={<Add />}
-              onClick={handleCreate}
-            >
-              Nouvelle Catégorie
-            </Button>
-          </Box>
+      {/* En-tête avec statistiques */}
+      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+        <Box>
+          <Typography variant="h4" component="h1" gutterBottom>
+            <Category sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Gestion des Catégories
+          </Typography>
+          <Typography variant="body1" color="textSecondary">
+            {stats.total} catégories • {stats.active} actives • {stats.inactive} inactives
+          </Typography>
+        </Box>
+        <Button 
+          variant="contained" 
+          startIcon={<Add />}
+          onClick={handleCreate}
+          size="large"
+        >
+          Nouvelle Catégorie
+        </Button>
+      </Box>
 
-          {/* Tableau des catégories */}
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell><strong>Nom</strong></TableCell>
-                  <TableCell><strong>Description</strong></TableCell>
-                  <TableCell><strong>Produits</strong></TableCell>
-                  <TableCell><strong>Statut</strong></TableCell>
-                  <TableCell><strong>Actions</strong></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {categories.map((category) => (
-                  <TableRow key={category.id} hover>
-                    <TableCell>
-                      <Typography variant="subtitle1">
-                        {category.name}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="textSecondary">
-                        {category.description || 'Aucune description'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={`${category.product_count || 0} produits`}
-                        variant="outlined"
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={category.is_active ? 'Active' : 'Inactive'}
-                        color={category.is_active ? 'success' : 'default'}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
+      {/* Tableau des catégories */}
+      <Card elevation={2}>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: 'action.hover' }}>
+                <TableCell><strong>Nom</strong></TableCell>
+                <TableCell><strong>Description</strong></TableCell>
+                <TableCell><strong>Produits</strong></TableCell>
+                <TableCell><strong>Statut</strong></TableCell>
+                <TableCell><strong>Création</strong></TableCell>
+                <TableCell><strong>Actions</strong></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {categories.map((category) => (
+                <TableRow 
+                  key={category.id} 
+                  hover
+                  sx={{ 
+                    opacity: category.is_active ? 1 : 0.7,
+                    '&:hover': { backgroundColor: 'action.hover' }
+                  }}
+                >
+                  <TableCell>
+                    <Typography variant="subtitle1" fontWeight="medium">
+                      {category.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" color="textSecondary" sx={{ maxWidth: 300 }}>
+                      {category.description || 'Aucune description'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={`${category.product_count || 0} produits`}
+                      variant="outlined"
+                      size="small"
+                      color={category.product_count > 0 ? "primary" : "default"}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={category.is_active ? 'Active' : 'Inactive'}
+                      color={category.is_active ? 'success' : 'default'}
+                      size="small"
+                      variant={category.is_active ? "filled" : "outlined"}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" color="textSecondary">
+                      {category.created_at ? new Date(category.created_at).toLocaleDateString() : 'N/A'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Box display="flex" gap={1}>
                       <IconButton 
                         color="primary" 
                         onClick={() => handleEdit(category)}
                         size="small"
+                        title="Modifier"
                       >
                         <Edit />
                       </IconButton>
@@ -153,42 +197,58 @@ const CategoryManager = () => {
                         color="error" 
                         onClick={() => handleDelete(category)}
                         size="small"
-                        disabled={deleteMutation.isLoading}
+                        disabled={deleteMutation.isLoading || (category.product_count || 0) > 0}
+                        title={
+                          (category.product_count || 0) > 0 
+                            ? "Impossible de supprimer une catégorie avec des produits" 
+                            : "Supprimer"
+                        }
                       >
                         <Delete />
                       </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-          {/* Message si aucune catégorie */}
-          {categories.length === 0 && (
-            <Box textAlign="center" py={4}>
-              <Typography variant="h6" color="textSecondary">
-                Aucune catégorie créée
-              </Typography>
-              <Button 
-                variant="outlined" 
-                startIcon={<Add />}
-                onClick={handleCreate}
-                sx={{ mt: 2 }}
-              >
-                Créer la première catégorie
-              </Button>
-            </Box>
-          )}
-        </Box>
+        {/* Message si aucune catégorie */}
+        {categories.length === 0 && (
+          <Box textAlign="center" py={6}>
+            <Category sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h6" color="textSecondary" gutterBottom>
+              Aucune catégorie créée
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+              Commencez par créer votre première catégorie pour organiser vos produits.
+            </Typography>
+            <Button 
+              variant="contained" 
+              startIcon={<Add />}
+              onClick={handleCreate}
+              size="large"
+            >
+              Créer la première catégorie
+            </Button>
+          </Box>
+        )}
       </Card>
 
-       //Pour édité les catégories. 
-<CategoryModal 
-  open={showModal}
-  onClose={() => setShowModal(false)}
-  category={selectedCategory}
-/>
+      {/* Modal de création/édition */}
+      <CategoryModal 
+        open={showModal}
+        onClose={handleModalClose}
+        category={selectedCategory}
+      />
+
+      {/* Indicateur de suppression */}
+      {deleteMutation.isLoading && (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          Suppression de la catégorie en cours...
+        </Alert>
+      )}
     </Box>
   );
 };
