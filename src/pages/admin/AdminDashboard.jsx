@@ -12,6 +12,9 @@ import PlatformSettingsModal from '../../components/admin/PlatformSettingsModal'
 import TransactionDetailsModal from '../../components/admin/TransactionDetailsModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import ServiceModal from '../../components/modals/ServiceModal';
+
+// ➕ AJOUTEZ CET IMPORT :
+import ProductList from '../../components/products/ProductList';
 import toast from 'react-hot-toast';
 
 const menuItems = [
@@ -19,10 +22,12 @@ const menuItems = [
   { name: 'Utilisateurs', path: '/admin/users' },
   { name: 'Produits', path: '/admin/products' },
   { name: 'Commandes', path: '/admin/orders' },
+  { name: 'Boutique', path: '/admin/boutique' }, // ➕ AJOUTEZ CET ONGLET
 ];
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard'); // ➕ AJOUTEZ LA GESTION DES ONGLETS
   const [stats, setStats] = useState({});
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -49,11 +54,11 @@ const AdminDashboard = () => {
       const [statsRes, usersRes, productsRes, withdrawalsRes, providerRes] = await Promise.all([
         statsAPI.admin(),
         adminAPI.users.list(),
-        productsAPI.all(),
+        productsAPI.my(), // ➕ CHANGEZ ICI : admin voit uniquement SES produits
         adminAPI.withdrawals.list(),
         providersAPI.active(),
       ]);
-      
+
       setStats(statsRes.data || {});
       setUsers(usersRes.data?.users || usersRes.data || []);
       setProducts(productsRes.data?.products || productsRes.data || []);
@@ -139,78 +144,136 @@ const AdminDashboard = () => {
 
   return (
     <DashboardLayout menuItems={menuItems}>
-      <h1 className="text-3xl font-bold mb-6">Tableau de bord Admin</h1>
-
-      {/* === Stats === */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[
-          { label: 'Utilisateurs', value: stats.total_users || users.length, icon: '👤', color: 'blue' },
-          { label: 'Produits', value: stats.total_products || products.length, icon: '📦', color: 'green' },
-          { label: 'Retraits', value: withdrawals.length, icon: '💰', color: 'yellow' },
-          { label: 'Wallet', value: `${walletBalance} XOF`, icon: '🏦', color: 'purple' },
-        ].map((s, i) => (
-          <div key={i} className={`p-6 bg-${s.color}-50 shadow rounded flex flex-col items-center hover:shadow-lg transition-shadow`}>
-            <span className={`text-${s.color}-500 text-3xl mb-2`}>{s.icon}</span>
-            <h3 className="text-gray-700 font-semibold mb-1">{s.label}</h3>
-            <p className="text-2xl font-bold">{s.value}</p>
-          </div>
-        ))}
+      {/* ➕ AJOUTEZ LA NAVIGATION PAR ONGLETS */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="-mb-px flex space-x-8">
+          {[
+            { id: 'dashboard', name: 'Tableau de bord' },
+            { id: 'boutique', name: 'Boutique' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === tab.id
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      {/* === Users Table === */}
-      <h2 className="text-2xl font-semibold mb-4">Utilisateurs</h2>
-      <div className="overflow-x-auto mb-8">
-        <table className="w-full table-auto border border-gray-200">
-          <thead className="bg-gray-100">
-            <tr>
-              {['ID','Nom','Email','Status'].map((h,i) => <th key={i} className="px-4 py-2">{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(u => (
-              <tr key={u.id} className="border-b hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-2 text-center">{u.id}</td>
-                <td className="px-4 py-2">{u.name}</td>
-                <td className="px-4 py-2">{u.email}</td>
-                <td className="px-4 py-2 text-center">
-                  <span className={`px-2 py-1 rounded-full text-white text-sm ${u.is_active ? 'bg-green-500' : 'bg-red-500'}`}>
-                    {u.is_active ? 'Actif' : 'Inactif'}
-                  </span>
-                </td>
-              </tr>
+      {/* === ONGLET TABLEAU DE BORD === */}
+      {activeTab === 'dashboard' && (
+        <>
+          <h1 className="text-3xl font-bold mb-6">Tableau de bord Admin</h1>
+
+          {/* === Stats === */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[
+              { label: 'Utilisateurs', value: stats.total_users || users.length, icon: '👤', color: 'blue' },
+              { label: 'Produits', value: stats.total_products || products.length, icon: '📦', color: 'green' },
+              { label: 'Retraits', value: withdrawals.length, icon: '💰', color: 'yellow' },
+              { label: 'Wallet', value: `${walletBalance} XOF`, icon: '🏦', color: 'purple' },
+            ].map((s, i) => (
+              <div key={i} className={`p-6 bg-${s.color}-50 shadow rounded flex flex-col items-center hover:shadow-lg transition-shadow`}>
+                <span className={`text-${s.color}-500 text-3xl mb-2`}>{s.icon}</span>
+                <h3 className="text-gray-700 font-semibold mb-1">{s.label}</h3>
+                <p className="text-2xl font-bold">{s.value}</p>
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* === Products Grid === */}
-      <h2 className="text-2xl font-semibold mb-4">Produits</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-        {products.map(p => (
-          <div key={p.id} className="p-4 bg-white shadow rounded flex flex-col justify-between hover:shadow-lg transition-shadow">
-            <div>
-              <h3 className="font-bold text-lg mb-1">{p.title || p.name}</h3>
-              <p className="text-gray-600">Prix : {p.price} XOF</p>
-              <p className="text-gray-500 text-sm">Stock : {p.stock || 'N/A'}</p>
-            </div>
-            <div className="mt-4 flex flex-col sm:flex-row gap-2">
-              <button onClick={() => openProductModal(p)} className="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">Modifier</button>
-              <button onClick={() => deleteProduct(p.id)} className="flex-1 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">Supprimer</button>
-            </div>
           </div>
-        ))}
-      </div>
 
-      {/* === Retraits === */}
-      <h2 className="text-2xl font-semibold mb-4">Retraits en attente</h2>
-      <ul className="mb-8 space-y-2">
-        {withdrawals.map(w => (
-          <li key={w.id} className="p-3 bg-gray-50 rounded flex justify-between items-center shadow-sm hover:bg-gray-100 transition-colors">
-            <span>{w.user_name} - {w.amount} XOF</span>
-            <span className="text-sm text-gray-500">{new Date(w.created_at).toLocaleDateString()}</span>
-          </li>
-        ))}
-      </ul>
+          {/* === Users Table === */}
+          <h2 className="text-2xl font-semibold mb-4">Utilisateurs</h2>
+          <div className="overflow-x-auto mb-8">
+            <table className="w-full table-auto border border-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  {['ID','Nom','Email','Status'].map((h,i) => <th key={i} className="px-4 py-2">{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u.id} className="border-b hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-2 text-center">{u.id}</td>
+                    <td className="px-4 py-2">{u.name}</td>
+                    <td className="px-4 py-2">{u.email}</td>
+                    <td className="px-4 py-2 text-center">
+                      <span className={`px-2 py-1 rounded-full text-white text-sm ${u.is_active ? 'bg-green-500' : 'bg-red-500'}`}>
+                        {u.is_active ? 'Actif' : 'Inactif'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* === Mes Produits (Admin) === */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold">Mes Produits ({products.length})</h2>
+            <button 
+              onClick={() => openProductModal()} 
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              + Nouveau Produit
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+            {products.map(p => (
+              <div key={p.id} className="p-4 bg-white shadow rounded flex flex-col justify-between hover:shadow-lg transition-shadow">
+                <div>
+                  <h3 className="font-bold text-lg mb-1">{p.title || p.name}</h3>
+                  <p className="text-gray-600">Prix : {p.price} XOF</p>
+                  <p className="text-gray-500 text-sm">Stock : {p.stock || 'N/A'}</p>
+                </div>
+                <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                  <button onClick={() => openProductModal(p)} className="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">Modifier</button>
+                  <button onClick={() => deleteProduct(p.id)} className="flex-1 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">Supprimer</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* === Retraits === */}
+          <h2 className="text-2xl font-semibold mb-4">Retraits en attente</h2>
+          <ul className="mb-8 space-y-2">
+            {withdrawals.map(w => (
+              <li key={w.id} className="p-3 bg-gray-50 rounded flex justify-between items-center shadow-sm hover:bg-gray-100 transition-colors">
+                <span>{w.user_name} - {w.amount} XOF</span>
+                <span className="text-sm text-gray-500">{new Date(w.created_at).toLocaleDateString()}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {/* === ONGLET BOUTIQUE === */}
+      {activeTab === 'boutique' && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Boutique Admin</h1>
+              <p className="text-gray-600 mt-2">Gérez vos produits en vente</p>
+            </div>
+            <button 
+              onClick={() => openProductModal()} 
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+            >
+              + Nouveau Produit
+            </button>
+          </div>
+
+          {/* ➕ INTÉGRATION DU ProductList INTELLIGENT */}
+          <div className="bg-white rounded-lg shadow">
+            <ProductList />
+          </div>
+        </div>
+      )}
 
       {/* === Modals === */}
       <ProductModal 
