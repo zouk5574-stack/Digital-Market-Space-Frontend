@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom'; // ➕ AJOUTEZ Routes, Route
 import { useStatsApi, useOrdersApi, useProductsApi, useFreelanceApi } from '../../hooks/useApi';
 import { fedapayAPI } from '../../services/api';
 import Button from '../../components/ui/Button';
 import StatsCard from '../../components/dashboard/StatsCard';
 import ProductCard from '../../components/products/ProductCard';
+
+// ➕ AJOUTEZ CET IMPORT :
+import ProductList from '../../components/products/ProductList';
+
 import MissionModal from '../../components/freelance/MissionModal';
 import toast from 'react-hot-toast';
 
@@ -36,7 +41,7 @@ const BuyerDashboard = () => {
         amount: product.price,
         currency: 'XOF'
       });
-      
+
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
@@ -92,6 +97,7 @@ const BuyerDashboard = () => {
               {[
                 { id: 'overview', name: 'Vue Générale' },
                 { id: 'products', name: 'Produits Digitaux' },
+                { id: 'boutique', name: 'Boutique' }, // ➕ AJOUTEZ CET ONGLET
                 { id: 'orders', name: 'Mes Achats' },
                 { id: 'missions', name: 'Mes Missions' },
               ].map(tab => (
@@ -114,6 +120,11 @@ const BuyerDashboard = () => {
 
       {/* ===== CONTENU ===== */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* ➕ AJOUTEZ CE ROUTING INTERNE : */}
+        <Routes>
+          <Route path="products" element={<ProductList />} />
+        </Routes>
+
         {/* VUE GÉNÉRALE */}
         {activeTab === 'overview' && (
           <section className="space-y-8">
@@ -161,6 +172,19 @@ const BuyerDashboard = () => {
                   onBuy={() => handleBuy(product)}
                 />
               ))}
+            </div>
+          </section>
+        )}
+
+        {/* ➕ AJOUTEZ CETTE SECTION BOUTIQUE AVEC ProductList : */}
+        {activeTab === 'boutique' && (
+          <section className="space-y-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Boutique Complète</h2>
+              <p className="text-gray-600 mt-1">Parcourez tous les produits avec filtres avancés.</p>
+            </div>
+            <div className="bg-white shadow rounded-lg p-6">
+              <ProductList />
             </div>
           </section>
         )}
