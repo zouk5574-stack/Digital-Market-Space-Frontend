@@ -3,7 +3,7 @@
 /* ========================================= */
 
 /* Import du système de design unifié */
-@import url('./styles/Global.css');
+@import url('./Global.css');
 
 /* Styles de base pour tout le projet */
 * {
