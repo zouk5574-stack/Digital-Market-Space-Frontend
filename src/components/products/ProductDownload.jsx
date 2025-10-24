@@ -1,6 +1,6 @@
 // src/components/products/ProductDownload.jsx
 import React, { useState, useEffect } from 'react';
-import { useFilesApi, useProductsApi } from '../../hooks/useApi';
+import { filesAPI, productsAPI } from '../../services/api';
 import Button from '../ui/Button';
 import Loader from '../ui/Loader';
 
@@ -10,9 +10,6 @@ const ProductDownload = ({ product, order }) => {
   const [error, setError] = useState(null);
   const [files, setFiles] = useState([]);
   
-  const { actions: filesActions } = useFilesApi();
-  const { actions: productsActions } = useProductsApi();
-
   // Vérifier si l'utilisateur a le droit de télécharger
   const canDownload = order && order.status === 'completed';
 
@@ -24,10 +21,9 @@ const ProductDownload = ({ product, order }) => {
     setError(null);
     
     try {
-      // Récupérer les fichiers associés au produit
-      // Supposons que l'API retourne les fichiers dans product.files ou via une route spécifique
-      const productDetails = await productsActions.getProductById(product.id);
-      const productFiles = productDetails.files || [];
+      // Récupérer les détails du produit avec les fichiers
+      const productDetails = await productsAPI.getById(product.id);
+      const productFiles = productDetails.data.files || [];
       
       if (productFiles.length > 0) {
         setFiles(productFiles);
@@ -36,13 +32,13 @@ const ProductDownload = ({ product, order }) => {
         const urls = [];
         for (const file of productFiles) {
           try {
-            const signedUrl = await filesActions.getSignedUrl(file.id);
+            const signedUrlResponse = await filesAPI.signedUrl(file.id);
             urls.push({
               id: file.id,
-              name: file.filename,
-              url: signedUrl.url,
-              size: file.size_bytes,
-              type: file.content_type
+              name: file.filename || file.name,
+              url: signedUrlResponse.data.url,
+              size: file.size_bytes || file.size,
+              type: file.content_type || file.type
             });
           } catch (fileError) {
             console.error(`Erreur fichier ${file.id}:`, fileError);
@@ -78,15 +74,16 @@ const ProductDownload = ({ product, order }) => {
   };
 
   const getFileIcon = (fileType) => {
-    if (fileType.includes('image')) return '🖼️';
-    if (fileType.includes('pdf')) return '📄';
-    if (fileType.includes('word') || fileType.includes('document')) return '📝';
-    if (fileType.includes('video')) return '🎬';
-    if (fileType.includes('zip') || fileType.includes('archive')) return '📦';
+    if (fileType?.includes('image')) return '🖼️';
+    if (fileType?.includes('pdf')) return '📄';
+    if (fileType?.includes('word') || fileType?.includes('document')) return '📝';
+    if (fileType?.includes('video')) return '🎬';
+    if (fileType?.includes('zip') || fileType?.includes('archive')) return '📦';
     return '📎';
   };
 
   const formatFileSize = (bytes) => {
+    if (!bytes) return 'Taille inconnue';
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -173,7 +170,7 @@ const ProductDownload = ({ product, order }) => {
             {downloadUrls.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
               >
                 <div className="flex items-center space-x-3">
                   <span className="text-xl">{getFileIcon(file.type)}</span>
@@ -182,7 +179,7 @@ const ProductDownload = ({ product, order }) => {
                       {file.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {formatFileSize(file.size)} • {file.type}
+                      {formatFileSize(file.size)} • {file.type || 'Fichier'}
                     </p>
                   </div>
                 </div>
@@ -191,6 +188,7 @@ const ProductDownload = ({ product, order }) => {
                   variant="primary"
                   size="small"
                   onClick={() => handleDownload(file.url, file.name)}
+                  className="bg-indigo-600 hover:bg-indigo-700"
                 >
                   📥 Télécharger
                 </Button>
@@ -205,7 +203,7 @@ const ProductDownload = ({ product, order }) => {
               </svg>
               <div>
                 <p className="text-sm text-blue-700">
-                  <strong>Important:</strong> Les liens de téléchargement expirent dans 1h30
+                  <strong>Important:</strong> Les liens de téléchargement expirent après un certain temps (1h30 max)
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
                   Téléchargez et sauvegardez vos fichiers rapidement
