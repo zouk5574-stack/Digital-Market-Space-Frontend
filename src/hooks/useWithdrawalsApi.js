@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { withdrawalsAPI, adminAPI } from '../services/api';
 
 export const useWithdrawalsApi = () => {
   const [loading, setLoading] = useState(false);
@@ -13,13 +13,11 @@ export const useWithdrawalsApi = () => {
     setError(null);
 
     try {
-      const res = await axios.post('/api/withdrawals', {
-        amount,
-        provider_id,
-        account_number
+      const res = await withdrawalsAPI.create({ 
+        amount, 
+        provider_id, 
+        account_number 
       });
-
-      // ✅ Backend renvoie l'URL Fedapay sécurisée
       return res.data;
     } catch (err) {
       console.error("Erreur createWithdrawal:", err);
@@ -38,7 +36,7 @@ export const useWithdrawalsApi = () => {
     setError(null);
 
     try {
-      const res = await axios.get('/api/withdrawals/my');
+      const res = await withdrawalsAPI.my();
       return res.data.withdrawals || [];
     } catch (err) {
       console.error("Erreur getMyWithdrawals:", err);
@@ -57,7 +55,7 @@ export const useWithdrawalsApi = () => {
     setError(null);
 
     try {
-      const res = await axios.post(`/api/withdrawals/${id}/approve`);
+      const res = await adminAPI.withdrawals.approve(id);
       return res.data;
     } catch (err) {
       console.error("Erreur approveWithdrawal:", err);
@@ -76,7 +74,7 @@ export const useWithdrawalsApi = () => {
     setError(null);
 
     try {
-      const res = await axios.post(`/api/withdrawals/${id}/reject`, { reason });
+      const res = await adminAPI.withdrawals.reject(id, reason);
       return res.data;
     } catch (err) {
       console.error("Erreur rejectWithdrawal:", err);
