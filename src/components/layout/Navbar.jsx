@@ -44,11 +44,8 @@ const Navbar = () => {
   `;
 
   return (
-    <nav className={`
-      bg-white sticky top-0 z-50 transition-all duration-300
-      ${scrolled ? 'shadow-lg py-2' : 'shadow-md py-3'}
-    `}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className={`global-header ${scrolled ? 'shadow-lg py-2' : 'shadow-md py-3'}`}>
+      <div className="header-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link 
@@ -103,7 +100,7 @@ const Navbar = () => {
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
+                  className="btn btn-primary"
                 >
                   Déconnexion
                 </button>
@@ -118,7 +115,7 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
+                  className="btn btn-primary"
                 >
                   Inscription
                 </Link>
@@ -195,7 +192,7 @@ const Navbar = () => {
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-medium"
+                      className="btn btn-primary w-full"
                     >
                       Déconnexion
                     </button>
@@ -212,7 +209,7 @@ const Navbar = () => {
                     <Link
                       to="/register"
                       onClick={toggleMenu}
-                      className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition text-center font-medium"
+                      className="btn btn-primary"
                     >
                       Inscription
                     </Link>
@@ -223,7 +220,7 @@ const Navbar = () => {
           </div>
         )}
       </div>
-    </nav>
+    </header>
   );
 };
 
