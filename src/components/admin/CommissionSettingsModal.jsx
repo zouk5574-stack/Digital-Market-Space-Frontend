@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
+import { adminAPI } from '../../services/api';
 
 /**
  * CommissionSettingsModal
  * @param {boolean} isOpen - Si le modal est ouvert
  * @param {function} onClose - Fonction pour fermer le modal
  * @param {number} currentRate - Taux de commission actuel (en %)
- * @param {function} onSave - Callback pour sauvegarder le nouveau taux
  */
-const CommissionSettingsModal = ({ isOpen, onClose, currentRate = 10, onSave }) => {
+const CommissionSettingsModal = ({ isOpen, onClose, currentRate = 10 }) => {
   const [rate, setRate] = useState(currentRate);
   const [saving, setSaving] = useState(false);
 
@@ -33,7 +33,8 @@ const CommissionSettingsModal = ({ isOpen, onClose, currentRate = 10, onSave }) 
     if (rate < 0 || rate > 100) return;
     setSaving(true);
     try {
-      await onSave(rate);
+      // ✅ Correction : utilisation du bon endpoint API
+      await adminAPI.commission.update({ commissionRate: rate });
       onClose();
     } catch (error) {
       console.error('Erreur sauvegarde commission:', error);
