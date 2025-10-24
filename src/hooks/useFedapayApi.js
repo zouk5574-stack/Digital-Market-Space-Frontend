@@ -1,21 +1,19 @@
-// src/hooks/useFedapayApi.js
-import { useApiCore } from './useApiCore';
+import { useState } from 'react';
+import { fedapayAPI, paymentsAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
-/**
- * Hook personnalisé pour gérer toutes les interactions avec FedaPay.
- * Permet d'initialiser, vérifier et suivre les paiements
- * (produits digitaux & missions freelance).
- */
 export const useFedapayApi = () => {
-  const api = useApiCore();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // ===============================
   // 🟢 INITIALISER UN PAIEMENT PRODUIT
   // ===============================
   const initProductPayment = async (data) => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await api.post('/fedapay/init', data);
+      const response = await fedapayAPI.initPayment(data);
       if (response.data?.url) {
         return { checkout_url: response.data.url };
       }
@@ -24,6 +22,8 @@ export const useFedapayApi = () => {
       console.error('❌ Erreur initProductPayment:', error);
       toast.error("Impossible d'initialiser le paiement. Réessayez.");
       return null;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,8 +31,10 @@ export const useFedapayApi = () => {
   // 🟣 INITIALISER UN PAIEMENT ESCROW (mission freelance)
   // ===============================
   const initEscrowPayment = async (data) => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await api.post('/fedapay/escrow/init', data);
+      const response = await fedapayAPI.initEscrow(data);
       if (response.data?.url) {
         return { checkout_url: response.data.url };
       }
@@ -41,6 +43,8 @@ export const useFedapayApi = () => {
       console.error('❌ Erreur initEscrowPayment:', error);
       toast.error("Erreur d'initialisation du paiement escrow.");
       return null;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,12 +52,16 @@ export const useFedapayApi = () => {
   // 🔵 VÉRIFIER UN PAIEMENT (Callback)
   // ===============================
   const verifyPayment = async (data) => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await api.post('/fedapay/verify', data);
+      const response = await paymentsAPI.verify(data);
       return response.data;
     } catch (error) {
       console.error('❌ Erreur verifyPayment:', error);
       return { status: 'error', message: error.message };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,37 +69,28 @@ export const useFedapayApi = () => {
   // 🟡 VÉRIFIER UN ESCROW EXISTANT
   // ===============================
   const verifyEscrow = async (transactionId) => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await api.get(`/fedapay/escrow/status/${transactionId}`);
+      // Note: Cette méthode n'existe pas dans l'API standard - à implémenter côté backend
+      const response = await paymentsAPI.getById(transactionId);
       return response.data;
     } catch (error) {
       console.error('❌ Erreur verifyEscrow:', error);
       return null;
-    }
-  };
-
-  // ===============================
-  // 🔥 ANNULER UN PAIEMENT / ESCROW
-  // ===============================
-  const cancelPayment = async (transactionId) => {
-    try {
-      const response = await api.post('/fedapay/cancel', { transactionId });
-      toast.success('Paiement annulé avec succès.');
-      return response.data;
-    } catch (error) {
-      console.error('❌ Erreur cancelPayment:', error);
-      toast.error("Impossible d'annuler le paiement.");
-      return null;
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
+    loading,
+    error,
     actions: {
       initProductPayment,
       initEscrowPayment,
       verifyPayment,
       verifyEscrow,
-      cancelPayment,
     },
   };
 };
