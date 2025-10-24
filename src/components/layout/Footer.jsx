@@ -6,8 +6,8 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gradient-to-b from-gray-900 to-gray-800 text-gray-200 mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="global-footer">
+      <div className="footer-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Section */}
           <div className="lg:col-span-1">
@@ -40,11 +40,11 @@ const Footer = () => {
           </div>
 
           {/* Liens rapides */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-6 relative inline-block">
+          <div className="footer-section">
+            <h4 className="text-lg font-semibold text-white mb-6 relative inline-block">
               Liens rapides
               <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-indigo-500 rounded-full"></div>
-            </h3>
+            </h4>
             <ul className="space-y-3">
               <li>
                 <Link to="/" className="text-gray-400 hover:text-indigo-400 transition flex items-center group">
@@ -80,11 +80,11 @@ const Footer = () => {
           </div>
 
           {/* Liens légaux */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-6 relative inline-block">
+          <div className="footer-section">
+            <h4 className="text-lg font-semibold text-white mb-6 relative inline-block">
               Informations
               <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-indigo-500 rounded-full"></div>
-            </h3>
+            </h4>
             <ul className="space-y-3">
               <li>
                 <a href="#" className="text-gray-400 hover:text-indigo-400 transition flex items-center group">
@@ -114,11 +114,11 @@ const Footer = () => {
           </div>
 
           {/* Contact */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-6 relative inline-block">
+          <div className="footer-section">
+            <h4 className="text-lg font-semibold text-white mb-6 relative inline-block">
               Contact
               <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-indigo-500 rounded-full"></div>
-            </h3>
+            </h4>
             <div className="space-y-4">
               <div className="flex items-center space-x-3 group">
                 <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -141,8 +141,8 @@ const Footer = () => {
                   <MapPin size={14} className="text-white" />
                 </div>
                 <span className="text-gray-400 group-hover:text-indigo-400 transition text-sm leading-relaxed">
-                  123 Avenue du Digital<br />
-                  75001 Paris, France
+                   Avenue du Digital<br />
+                  Made in Bénin ** Valorisons La Tech Et L'innovation Béninoise **
                 </span>
               </div>
             </div>
@@ -151,7 +151,7 @@ const Footer = () => {
       </div>
 
       {/* Bas de page */}
-      <div className="border-t border-gray-700">
+      <div className="footer-bottom border-t border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-gray-400 text-sm text-center md:text-left">
