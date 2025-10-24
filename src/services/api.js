@@ -279,6 +279,26 @@ export const providersAPI = {
 };
 
 // ===============================
+// CATÉGORIES
+// ===============================
+export const categoriesAPI = {
+  all: (params) => api.get(CATEGORIES.BASE, { params }),
+  getById: (id) => api.get(CATEGORIES.BY_ID(id)),
+  create: (data) => api.post(CATEGORIES.BASE, data),
+  update: (id, data) => api.put(CATEGORIES.BY_ID(id), data),
+  delete: (id) => api.delete(CATEGORIES.BY_ID(id)),
+};
+
+// ===============================
+// TAGS
+// ===============================
+export const tagsAPI = {
+  all: (params) => api.get(TAGS.BASE, { params }),
+  create: (data) => api.post(TAGS.BASE, data),
+  delete: (id) => api.delete(`${TAGS.BASE}/${id}`),
+};
+
+// ===============================
 // EXPORT DEFAULT
 // ===============================
 export default api;
