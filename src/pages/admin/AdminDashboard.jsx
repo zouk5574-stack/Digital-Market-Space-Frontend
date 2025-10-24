@@ -17,6 +17,10 @@ import CategoryManager from '../../components/admin/CategoryManager';
 import TagSystem from '../../components/admin/TagSystem';
 import AdminWithdrawalModal from '../../components/admin/AdminWithdrawalModal';
 import AdminEarningsWithdrawalModal from '../../components/admin/AdminEarningsWithdrawalModal';
+
+// 🆕 IMPORTATION DE LA NOUVELLE FONCTIONNALITÉ
+import SecurityPanel from '../../components/Settings/SecurityPanel';
+
 import toast from 'react-hot-toast';
 
 const menuItems = [
@@ -27,6 +31,8 @@ const menuItems = [
   { name: 'Catégories', path: '/admin/categories' },
   { name: 'Tags', path: '/admin/tags' },
   { name: 'Paramètres', path: '/admin/settings' },
+  // 🆕 NOUVEL ITEM DE MENU
+  { name: 'Sécurité', path: '/admin/security' },
 ];
 
 const AdminDashboard = () => {
@@ -90,7 +96,7 @@ const AdminDashboard = () => {
     fetchInitialData();
   }, []);
 
-// ==================== Gestion Produits ====================
+  // ==================== Gestion Produits ====================
   const openProductModal = (product = null) => setProductModal({ isOpen: true, product });
   const saveProduct = async (data) => {
     try {
@@ -180,6 +186,7 @@ const AdminDashboard = () => {
                 {activeTab === 'categories' && 'Gestion des Catégories'}
                 {activeTab === 'tags' && 'Gestion des Tags'}
                 {activeTab === 'settings' && 'Paramètres Plateforme'}
+                {activeTab === 'security' && 'Paramètres de Sécurité'} {/* 🆕 NOUVEL EN-TÊTE */}
               </h1>
               <p className="mt-1 text-sm text-gray-500">
                 {activeTab === 'dashboard' && 'Vue d\'ensemble et statistiques de la plateforme'}
@@ -187,10 +194,11 @@ const AdminDashboard = () => {
                 {activeTab === 'categories' && 'Organisez vos produits par catégories'}
                 {activeTab === 'tags' && 'Gérez les tags pour un meilleur référencement'}
                 {activeTab === 'settings' && 'Configurez les paramètres de la plateforme'}
+                {activeTab === 'security' && 'Gérez la sécurité et les sauvegardes du système'} {/* 🆕 NOUVELLE DESCRIPTION */}
               </p>
             </div>
 
-            {/* BOUTONS D'ACTION PRINCIPAUX */}
+         {/* BOUTONS D'ACTION PRINCIPAUX */}
             <div className="mt-4 lg:mt-0 flex flex-wrap gap-2">
               {activeTab === 'dashboard' && (
                 <>
@@ -234,6 +242,7 @@ const AdminDashboard = () => {
               { id: 'categories', name: '📁 Catégories' },
               { id: 'tags', name: '🏷️ Tags' },
               { id: 'settings', name: '⚙️ Paramètres' },
+              { id: 'security', name: '🛡️ Sécurité' }, // 🆕 NOUVEL ONGLET
             ].map(tab => (
               <button
                 key={tab.id}
@@ -251,7 +260,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-{/* === CONTENU PRINCIPAL === */}
+      {/* === CONTENU PRINCIPAL === */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
         
         {/* === TABLEAU DE BORD === */}
@@ -318,7 +327,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-{/* RETRAITS EN ATTENTE */}
+  {/* RETRAITS EN ATTENTE */}
               <div className="bg-white shadow-sm rounded-lg border border-gray-200">
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h3 className="text-lg font-medium text-gray-900">Retraits en Attente</h3>
@@ -411,7 +420,7 @@ const AdminDashboard = () => {
                 </button>
               </div>
 
-  {/* PARAMÈTRES PLATEFORME */}
+              {/* PARAMÈTRES PLATEFORME */}
               <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Paramètres Généraux</h3>
                 <p className="text-sm text-gray-600 mb-4">Configurez les paramètres généraux de la plateforme.</p>
@@ -436,6 +445,13 @@ const AdminDashboard = () => {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* 🆕 ONGLET SÉCURITÉ */}
+        {activeTab === 'security' && (
+          <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+            <SecurityPanel />
           </div>
         )}
       </main>
