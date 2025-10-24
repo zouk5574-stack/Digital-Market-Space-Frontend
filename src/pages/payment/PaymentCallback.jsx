@@ -1,7 +1,7 @@
 // src/pages/payment/PaymentCallback.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useFedapayApi, useOrdersApi } from '../../hooks/useApi';
+import { paymentsAPI, ordersAPI } from '../../services/api';
 import Loader from '../../components/ui/Loader';
 import Button from '../../components/ui/Button';
 import toast from 'react-hot-toast';
@@ -12,8 +12,6 @@ const PaymentCallback = () => {
   const [order, setOrder] = useState(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { actions: fedapayActions } = useFedapayApi();
-  const { actions: ordersActions } = useOrdersApi();
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -26,15 +24,18 @@ const PaymentCallback = () => {
         }
 
         // 🔍 Vérification côté backend via Fedapay
-        const verification = await fedapayActions.verifyPayment({ transactionId, orderId });
+        const verification = await paymentsAPI.verify({ 
+          transaction_id: transactionId, 
+          order_id: orderId 
+        });
 
-        if (verification?.status === 'success') {
+        if (verification.data?.status === 'success') {
           setStatus('success');
           setMessage('Paiement réussi ✅');
 
           // 📦 Marquer la commande comme payée
-          const updatedOrder = await ordersActions.updateStatus(orderId, { status: 'completed' });
-          setOrder(updatedOrder);
+          const updatedOrder = await ordersAPI.updateStatus(orderId, 'completed');
+          setOrder(updatedOrder.data);
           toast.success('Votre paiement a été confirmé.');
 
           // 🧹 Nettoyage du localStorage
