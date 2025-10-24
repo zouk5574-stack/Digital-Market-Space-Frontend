@@ -2,20 +2,30 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import { fedapayAPI } from '../../services/api'; // ✅ Ajout de l'import API
 
-const FedapayConfigModal = ({ isOpen, onClose, onSave, currentKeys }) => {
+const FedapayConfigModal = ({ isOpen, onClose, currentKeys }) => {
   const [formData, setFormData] = useState({ public_key: '', secret_key: '' });
   const [loading, setLoading] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
 
   useEffect(() => {
-    if (isOpen && currentKeys) {
-      setFormData({
-        public_key: currentKeys.public_key || '',
-        secret_key: currentKeys.secret_key || ''
-      });
+    if (isOpen) {
+      const fetchKeys = async () => {
+        try {
+          // ✅ Chargement des clés depuis l'API
+          const { data } = await fedapayAPI.adminKeys();
+          setFormData({
+            public_key: data.public_key || '',
+            secret_key: data.secret_key || ''
+          });
+        } catch (err) {
+          console.error('Erreur chargement clés Fedapay:', err);
+        }
+      };
+      fetchKeys();
     }
-  }, [isOpen, currentKeys]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -33,8 +43,11 @@ const FedapayConfigModal = ({ isOpen, onClose, onSave, currentKeys }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await onSave(formData);
+      // ✅ Correction : utilisation directe de l'API
+      await fedapayAPI.setKeys(formData);
       onClose();
+      // Optionnel : recharger les données parentes
+      if (window.location.reload) window.location.reload();
     } catch (error) {
       console.error('Erreur sauvegarde Fedapay:', error);
       alert('Erreur lors de la sauvegarde. Vérifiez vos clés.');
