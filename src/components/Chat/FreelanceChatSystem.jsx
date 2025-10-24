@@ -17,7 +17,8 @@ import {
   Paper,
   Chip,
   Alert,
-  Snackbar
+  Snackbar,
+  CircularProgress
 } from '@mui/material';
 import {
   Send as SendIcon,
@@ -26,7 +27,10 @@ import {
   CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 
-const FreelanceChatSystem = () => {
+// ✅ IMPORT DES SERVICES API CONFIGURÉS
+import { chatAPI } from '../../services/api';
+
+const FreelanceChatSystem = ({ missionId }) => {
   // États pour la messagerie
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -38,27 +42,24 @@ const FreelanceChatSystem = () => {
 
   const messagesEndRef = useRef(null);
 
-  // 📡 CHARGE LES CONVERSATIONS FREELANCE
+  // 📡 CHARGE LES CONVERSATIONS FREELANCE AVEC L'API CONFIGURÉE
   const loadFreelanceConversations = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}${CHAT.CONVERSATIONS}?type=freelance`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setConversations(data.conversations || []);
-        
-        if (data.conversations.length > 0 && !selectedConversation) {
-          setSelectedConversation(data.conversations[0]);
-        }
-      } else {
-        throw new Error('Erreur lors du chargement des conversations');
+      // ✅ UTILISATION DE L'API CONFIGURÉE
+      const response = await chatAPI.conversations();
+      const conversationsData = response.data;
+      
+      // Filtrer les conversations liées aux missions si missionId est fourni
+      const filteredConversations = missionId 
+        ? conversationsData.filter(conv => conv.mission_id === missionId)
+        : conversationsData;
+      
+      setConversations(filteredConversations || []);
+      
+      // Sélectionner la première conversation par défaut
+      if (filteredConversations.length > 0 && !selectedConversation) {
+        setSelectedConversation(filteredConversations[0]);
       }
     } catch (error) {
       console.error('Erreur chargement conversations:', error);
@@ -68,58 +69,41 @@ const FreelanceChatSystem = () => {
     }
   };
 
-  // 📡 CHARGE LES MESSAGES D'UNE CONVERSATION
+  // 📡 CHARGE LES MESSAGES D'UNE CONVERSATION AVEC L'API CONFIGURÉE
   const loadMessages = async (conversationId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}${CHAT.MESSAGES(conversationId)}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.messages || []);
-        
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
-      }
+      // ✅ UTILISATION DE L'API CONFIGURÉE
+      const response = await chatAPI.messages(conversationId);
+      setMessages(response.data || []);
+      
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
     } catch (error) {
       console.error('Erreur chargement messages:', error);
       showSnackbar('Erreur lors du chargement des messages', 'error');
     }
   };
 
-  // 📤 ENVOIE UN NOUVEAU MESSAGE
+  // 📤 ENVOIE UN NOUVEAU MESSAGE AVEC L'API CONFIGURÉE
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedConversation) return;
 
     setSending(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}${CHAT.SEND_MESSAGE}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          conversation_id: selectedConversation.id,
-          mission_id: selectedConversation.mission_id,
-          content: newMessage.trim()
-        })
+      // ✅ UTILISATION DE L'API CONFIGURÉE
+      const response = await chatAPI.sendMessage({
+        conversation_id: selectedConversation.id,
+        mission_id: selectedConversation.mission_id,
+        content: newMessage.trim()
       });
 
-      if (response.ok) {
-        const sentMessage = await response.json();
-        setMessages(prev => [...prev, sentMessage.message]);
-        setNewMessage('');
-        scrollToBottom();
-        showSnackbar('Message envoyé', 'success');
-      } else {
-        throw new Error('Erreur lors de l\'envoi du message');
-      }
+      const sentMessage = response.data;
+      setMessages(prev => [...prev, sentMessage]);
+      setNewMessage('');
+      scrollToBottom();
+      showSnackbar('Message envoyé', 'success');
     } catch (error) {
       console.error('Erreur envoi message:', error);
       showSnackbar('Erreur lors de l\'envoi du message', 'error');
@@ -159,7 +143,7 @@ const FreelanceChatSystem = () => {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [selectedConversation]);
+  }, [selectedConversation, missionId]);
 
   // 📥 RECHARGE LES MESSAGES QUAND ON CHANGE DE CONVERSATION
   useEffect(() => {
@@ -170,6 +154,8 @@ const FreelanceChatSystem = () => {
 
   // 🎨 FORMATAGE DE LA DATE
   const formatMessageTime = (timestamp) => {
+    if (!timestamp) return 'Date inconnue';
+    
     const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now - date;
@@ -190,13 +176,17 @@ const FreelanceChatSystem = () => {
 
   // 👤 DÉTERMINE SI LE MESSAGE EST DE L'UTILISATEUR COURANT
   const isOwnMessage = (message) => {
-    return message.sender_id === 'current_user_id'; // À adapter selon votre auth
+    // Cette logique dépend de votre système d'authentification
+    // À adapter selon votre implémentation
+    const currentUser = JSON.parse(localStorage.getItem('userData'));
+    return message.sender_id === currentUser?.id;
   };
 
   if (loading && conversations.length === 0) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <Typography>Chargement des conversations...</Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px" flexDirection="column">
+        <CircularProgress />
+        <Typography sx={{ mt: 2 }}>Chargement des conversations...</Typography>
       </Box>
     );
   }
@@ -209,7 +199,7 @@ const FreelanceChatSystem = () => {
       </Typography>
       
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        Communication texte avec votre client/prestataire
+        {missionId ? 'Communication pour cette mission' : 'Communication avec vos clients/prestataires'}
       </Typography>
 
       <Card sx={{ height: 'calc(100% - 100px)' }}>
@@ -228,56 +218,70 @@ const FreelanceChatSystem = () => {
             </Box>
             
             <List sx={{ flex: 1, overflow: 'auto' }}>
-              {conversations.map((conversation) => (
-                <ListItem
-                  key={conversation.id}
-                  button
-                  selected={selectedConversation?.id === conversation.id}
-                  onClick={() => handleSelectConversation(conversation)}
-                  sx={{
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    '&.Mui-selected': {
-                      backgroundColor: 'primary.light',
-                      '&:hover': {
+              {conversations.length === 0 ? (
+                <Box sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Aucune conversation active
+                  </Typography>
+                </Box>
+              ) : (
+                conversations.map((conversation) => (
+                  <ListItem
+                    key={conversation.id}
+                    button
+                    selected={selectedConversation?.id === conversation.id}
+                    onClick={() => handleSelectConversation(conversation)}
+                    sx={{
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      '&.Mui-selected': {
                         backgroundColor: 'primary.light',
+                        '&:hover': {
+                          backgroundColor: 'primary.light',
+                        },
                       },
-                    },
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Avatar>
-                      <PersonIcon />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="subtitle1" noWrap>
-                          {conversation.other_user_name}
-                        </Typography>
-                        {conversation.unread_count > 0 && (
-                          <Chip
-                            label={conversation.unread_count}
-                            size="small"
-                            color="error"
-                          />
-                        )}
-                      </Box>
-                    }
-                    secondary={
-                      <Box>
-                        <Typography variant="body2" color="text.secondary" noWrap>
-                          {conversation.last_message_content || 'Aucun message'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {conversation.mission_title}
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                </ListItem>
-              ))}
+                    }}
+                  >
+                    <ListItemAvatar>
+                      <Badge
+                        color="success"
+                        variant="dot"
+                        invisible={!conversation.is_online}
+                      >
+                        <Avatar>
+                          <PersonIcon />
+                        </Avatar>
+                      </Badge>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="subtitle1" noWrap>
+                            {conversation.other_user_name || 'Utilisateur'}
+                          </Typography>
+                          {conversation.unread_count > 0 && (
+                            <Chip
+                              label={conversation.unread_count}
+                              size="small"
+                              color="error"
+                            />
+                          )}
+                        </Box>
+                      }
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" color="text.secondary" noWrap>
+                            {conversation.last_message_content || 'Aucun message'}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {conversation.mission_title || 'Mission'}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  </ListItem>
+                ))
+              )}
             </List>
           </Box>
 
@@ -290,10 +294,10 @@ const FreelanceChatSystem = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box>
                       <Typography variant="h6">
-                        {selectedConversation.other_user_name}
+                        {selectedConversation.other_user_name || 'Utilisateur'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Mission: {selectedConversation.mission_title}
+                        Mission: {selectedConversation.mission_title || 'Non spécifiée'}
                       </Typography>
                     </Box>
                     <Chip
@@ -319,7 +323,7 @@ const FreelanceChatSystem = () => {
                   ) : (
                     messages.map((message) => (
                       <Box
-                        key={message.id}
+                        key={message.id || message._id}
                         sx={{
                           display: 'flex',
                           justifyContent: isOwnMessage(message) ? 'flex-end' : 'flex-start',
@@ -332,7 +336,8 @@ const FreelanceChatSystem = () => {
                             maxWidth: '70%',
                             bgcolor: isOwnMessage(message) ? 'primary.main' : 'background.paper',
                             color: isOwnMessage(message) ? 'primary.contrastText' : 'text.primary',
-                            borderRadius: 2
+                            borderRadius: 2,
+                            boxShadow: 1
                           }}
                         >
                           <Typography variant="body1">{message.content}</Typography>
@@ -345,7 +350,7 @@ const FreelanceChatSystem = () => {
                               opacity: 0.8
                             }}
                           >
-                            {formatMessageTime(message.created_at)}
+                            {formatMessageTime(message.created_at || message.timestamp)}
                           </Typography>
                         </Paper>
                       </Box>
@@ -376,16 +381,19 @@ const FreelanceChatSystem = () => {
                         startIcon={<SendIcon />}
                         sx={{ minWidth: '100px' }}
                       >
-                        {sending ? 'Envoi...' : 'Envoyer'}
+                        {sending ? <CircularProgress size={20} /> : 'Envoyer'}
                       </Button>
                     </Box>
                   </form>
                 </Box>
               </>
             ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                <Typography variant="h6" color="text.secondary">
-                  Sélectionnez une conversation de mission
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column' }}>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  {conversations.length === 0 ? 'Aucune conversation disponible' : 'Sélectionnez une conversation'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {conversations.length === 0 ? 'Les conversations apparaîtront ici lorsque vous aurez des missions actives' : 'Choisissez une conversation pour commencer à discuter'}
                 </Typography>
               </Box>
             )}
@@ -407,8 +415,5 @@ const FreelanceChatSystem = () => {
     </Box>
   );
 };
-
-// Import des endpoints
-import { CHAT } from '../../services/endpoints';
 
 export default FreelanceChatSystem;
