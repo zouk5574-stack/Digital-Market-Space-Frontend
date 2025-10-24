@@ -1,25 +1,5 @@
 // src/services/api.js
 import axios from 'axios';
-import {
-  AUTH,
-  ADMIN,
-  FREELANCE,
-  PRODUCTS,
-  ORDERS,
-  WITHDRAWALS,
-  FILES,
-  FEDAPAY,
-  PAYMENTS,
-  SETTINGS,
-  CATEGORIES,
-  TAGS,
-  NOTIFS,
-  CHAT,
-  AI,
-  AI_EXTRA,
-  STATS,
-  PROVIDERS
-} from './endpoints';
 
 // ===============================
 // CONFIGURATION AXIOS
