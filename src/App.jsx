@@ -13,7 +13,7 @@ import HomePage from './pages/auth/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
-// ➕ AJOUTEZ CET IMPORT :
+// ✅ Produits
 import ProductList from './components/products/ProductList';
 
 // ✅ Dashboards
@@ -23,6 +23,11 @@ import BuyerDashboard from './pages/buyer/BuyerDashboard';
 
 // ✅ Paiement
 import PaymentCallback from './pages/payment/PaymentCallback';
+
+// 🆕 NOUVELLES FONCTIONNALITÉS
+import SecurityPanel from './components/Settings/SecurityPanel';
+import FreelanceChatSystem from './components/Chat/FreelanceChatSystem';
+import MissionDetails from './pages/freelance/MissionDetails';
 
 // ✅ STYLE GLOBAL UNIQUE (point d'entrée)
 import './styles/index.css';
@@ -79,9 +84,25 @@ const AppRoutes = () => (
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      
-      {/* ➕ AJOUTEZ CETTE ROUTE PRODUITS (publique) : */}
       <Route path="/products" element={<ProductList />} />
+
+      {/* 🆕 ROUTES MESSAGERIE FREELANCE */}
+      <Route
+        path="/missions/:id"
+        element={
+          <PrivateRoute>
+            <MissionDetails />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/chat/mission/:missionId"
+        element={
+          <PrivateRoute>
+            <FreelanceChatSystem />
+          </PrivateRoute>
+        }
+      />
 
       {/* Dashboards avec protection de rôle */}
       <Route
@@ -92,6 +113,17 @@ const AppRoutes = () => (
           </RoleProtectedRoute>
         }
       />
+      
+      {/* 🆕 SOUS-ROUTES ADMIN POUR SÉCURITÉ */}
+      <Route
+        path="/admin/security"
+        element={
+          <RoleProtectedRoute allowedRoles={['admin', 'super_admin']}>
+            <SecurityPanel />
+          </RoleProtectedRoute>
+        }
+      />
+
       <Route
         path="/seller/*"
         element={
