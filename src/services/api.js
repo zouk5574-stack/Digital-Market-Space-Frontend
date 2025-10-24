@@ -154,6 +154,28 @@ export const productsAPI = {
     api.get(PRODUCTS.SEARCH, { params: { q: query, ...params } }),
 };
 
+// Dans votre fichier api.js, ajoutez ces méthodes :
+
+export const productsAPI = {
+  all: (params) => api.get(PRODUCTS.BASE, { params }),
+  getById: (id) => api.get(PRODUCTS.BY_ID(id)),
+  my: () => api.get(PRODUCTS.MY),
+  search: (query, params) => api.get(PRODUCTS.SEARCH, { params: { q: query, ...params } }),
+  // ✅ Ajout des méthodes manquantes
+  create: (data) => api.post(PRODUCTS.BASE, data),
+  update: (id, data) => api.put(PRODUCTS.BY_ID(id), data),
+  delete: (id) => api.delete(PRODUCTS.BY_ID(id)),
+};
+
+export const withdrawalsAPI = {
+  all: () => api.get(WITHDRAWALS.BASE),
+  my: () => api.get(WITHDRAWALS.MY),
+  adminAll: () => api.get(WITHDRAWALS.ADMIN_ALL),
+  // ✅ Ajout des méthodes manquantes
+  create: (data) => api.post(WITHDRAWALS.BASE, data),
+  cancel: (id) => api.delete(WITHDRAWALS.BY_ID(id)),
+};
+
 // ===============================
 // COMMANDES
 // ===============================
