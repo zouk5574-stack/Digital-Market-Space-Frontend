@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { categoriesAPI } from '../../services/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import CategoryModal from './CategoryModal';
 import { 
   Box, 
   Button, 
@@ -182,12 +183,12 @@ const CategoryManager = () => {
         </Box>
       </Card>
 
-      {/* Modal d'édition/création (sera implémenté après) */}
-      {/* <CategoryModal 
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        category={selectedCategory}
-      /> */}
+       //Pour édité les catégories. 
+<CategoryModal 
+  open={showModal}
+  onClose={() => setShowModal(false)}
+  category={selectedCategory}
+/>
     </Box>
   );
 };
