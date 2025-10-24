@@ -1,6 +1,6 @@
 // src/components/freelance/DeliveryModal.jsx
 import React, { useState } from 'react';
-import { useFilesApi, useFreelanceApi } from '../../hooks/useApi';
+import { filesAPI, freelanceAPI } from '../../services/api'; // ✅ Import direct
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import TextArea from '../ui/TextArea';
@@ -13,22 +13,20 @@ const DeliveryModal = ({ isOpen, onClose, mission, onDelivery }) => {
   });
   const [uploadedFile, setUploadedFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  
-  const { actions: filesActions } = useFilesApi();
-  const { actions: freelanceActions } = useFreelanceApi();
 
   const handleFileUpload = async (file) => {
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('product_id', mission.id); // Utiliser mission ID comme référence
+      // Pas besoin de product_id pour les missions
 
-      const uploadedFile = await filesActions.uploadFile(formData);
-      setUploadedFile(uploadedFile);
+      // ✅ CORRECT : utilise filesAPI.upload()
+      const response = await filesAPI.upload(formData);
+      setUploadedFile(response.data);
       setFormData(prev => ({
         ...prev,
-        file_url: uploadedFile.url
+        file_url: response.data.url
       }));
     } catch (error) {
       console.error('Erreur upload fichier:', error);
@@ -48,7 +46,8 @@ const DeliveryModal = ({ isOpen, onClose, mission, onDelivery }) => {
 
     setLoading(true);
     try {
-      await freelanceActions.deliverWork({
+      // ✅ CORRECT : utilise freelanceAPI.missions.deliver()
+      await freelanceAPI.missions.deliver({
         mission_id: mission.id,
         delivery_note: formData.delivery_note,
         file_url: uploadedFile.url
@@ -119,7 +118,7 @@ const DeliveryModal = ({ isOpen, onClose, mission, onDelivery }) => {
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     <span className="text-sm text-green-700">
-                      Fichier uploadé: {uploadedFile.filename}
+                      Fichier uploadé: {uploadedFile.name}
                     </span>
                   </div>
                 </div>
