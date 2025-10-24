@@ -6,11 +6,20 @@ import StatsCard from '../../components/dashboard/StatsCard';
 import ProductCard from '../../components/products/ProductCard';
 import ProductList from '../../components/products/ProductList';
 import MissionModal from '../../components/freelance/MissionModal';
+
+// 🆕 IMPORTATIONS POUR LES NOUVELLES FONCTIONNALITÉS
+import FreelanceChatSystem from '../../components/Chat/FreelanceChatSystem';
+import MissionDetails from '../../pages/freelance/MissionDetails';
+
 import toast from 'react-hot-toast';
 
 const BuyerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showMissionModal, setShowMissionModal] = useState(false);
+  
+  // 🆕 ÉTATS POUR LES NOUVELLES FONCTIONNALITÉS
+  const [chatModal, setChatModal] = useState({ isOpen: false, missionId: null });
+  const [selectedMission, setSelectedMission] = useState(null);
 
   const { actions: statsActions, states: statsStates } = useStatsApi();
   const { actions: ordersActions, states: ordersStates } = useOrdersApi();
@@ -75,6 +84,17 @@ const BuyerDashboard = () => {
       console.error(err);
       toast.error('Erreur lors de la création de la mission');
     }
+  };
+
+  // 🆕 GESTIONNAIRES POUR LES NOUVELLES FONCTIONNALITÉS
+  const handleOpenChat = (mission) => {
+    setChatModal({ isOpen: true, missionId: mission.id });
+  };
+
+  const handleViewMissionDetails = (mission) => {
+    setSelectedMission(mission);
+    // Navigation vers la page de détails de mission
+    window.location.href = `/missions/${mission.id}`;
   };
 
   return (
@@ -264,15 +284,36 @@ const BuyerDashboard = () => {
                         </div>
                       </div>
 
-                      {mission.status === 'awaiting_validation' && (
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {mission.status === 'awaiting_validation' && (
+                          <Button
+                            variant="primary"
+                            size="small"
+                            onClick={() => handleValidateDelivery(mission.id)}
+                          >
+                            Valider Livraison
+                          </Button>
+                        )}
+                        
+                        {/* 🆕 BOUTONS POUR LES NOUVELLES FONCTIONNALITÉS */}
+                        {(mission.status === 'in_progress' || mission.status === 'awaiting_validation') && (
+                          <Button
+                            variant="secondary"
+                            size="small"
+                            onClick={() => handleOpenChat(mission)}
+                          >
+                            💬 Chat
+                          </Button>
+                        )}
+                        
                         <Button
-                          variant="primary"
+                          variant="outline"
                           size="small"
-                          onClick={() => handleValidateDelivery(mission.id)}
+                          onClick={() => handleViewMissionDetails(mission)}
                         >
-                          Valider Livraison
-                        </Button>
-                      )}
+                            📋 Détails
+                          </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -287,6 +328,26 @@ const BuyerDashboard = () => {
         onClose={() => setShowMissionModal(false)}
         onCreate={handleCreateMission}
       />
+
+      {/* 🆕 MODALES POUR LES NOUVELLES FONCTIONNALITÉS */}
+      {chatModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl h-[80vh] flex flex-col">
+            <div className="flex-1 overflow-hidden">
+              <FreelanceChatSystem missionId={chatModal.missionId} />
+            </div>
+            <div className="p-4 border-t bg-white">
+              <Button 
+                onClick={() => setChatModal({ isOpen: false, missionId: null })}
+                variant="secondary"
+                className="w-full sm:w-auto"
+              >
+                Fermer la Messagerie
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
