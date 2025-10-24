@@ -1,25 +1,24 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import api from '../services/api';
+import { authAPI } from '../services/api'; // ✅ Import standardisé
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(localStorage.getItem('authToken')); // ✅ Correction: 'authToken'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Charger l’utilisateur s’il y a un token
+  // Charger l'utilisateur s'il y a un token
   useEffect(() => {
     if (token) {
-      api.setToken(token);
       fetchUserProfile();
     }
   }, [token]);
 
   const fetchUserProfile = async () => {
     try {
-      const { data } = await api.get('/auth/profile');
+      const { data } = await authAPI.getProfile(); // ✅ Méthode API standardisée
       setUser(data);
     } catch {
       logout();
@@ -30,14 +29,13 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.post('/auth/login', { identifier, password });
-      localStorage.setItem('token', data.token);
-      api.setToken(data.token);
+      const { data } = await authAPI.login({ identifier, password }); // ✅ Méthode API standardisée
+      localStorage.setItem('authToken', data.token); // ✅ Correction: 'authToken'
       setToken(data.token);
       setUser(data.user);
       return { success: true };
     } catch (err) {
-      setError(err.response?.data?.message || 'Échec de la connexion');
+      setError(err.response?.data?.error || 'Échec de la connexion'); // ✅ Structure erreur standardisée
       return { success: false };
     } finally {
       setLoading(false);
@@ -48,16 +46,15 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.post('/auth/super-admin/login', {
+      const { data } = await authAPI.superAdminLogin({ // ✅ Méthode API standardisée
         firstname, lastname, phone, adminPassword
       });
-      localStorage.setItem('token', data.token);
-      api.setToken(data.token);
+      localStorage.setItem('authToken', data.token); // ✅ Correction: 'authToken'
       setToken(data.token);
       setUser(data.user);
       return { success: true };
     } catch (err) {
-      setError(err.response?.data?.message || 'Connexion admin échouée');
+      setError(err.response?.data?.error || 'Connexion admin échouée'); // ✅ Structure erreur standardisée
       return { success: false };
     } finally {
       setLoading(false);
@@ -68,21 +65,27 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      await api.post('/auth/register', formData);
+      await authAPI.register(formData); // ✅ Méthode API standardisée
       return { success: true };
     } catch (err) {
-      setError(err.response?.data?.message || 'Échec de l’inscription');
+      setError(err.response?.data?.error || 'Échec de l\'inscription'); // ✅ Structure erreur standardisée
       return { success: false };
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = async() => {
-    localStorage.removeItem('token');
-    setUser(null);
-    setToken(null);
-    api.setToken(null);
+  const logout = async () => {
+    try {
+      await authAPI.logout(); // ✅ Méthode API standardisée
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      localStorage.removeItem('authToken'); // ✅ Correction: 'authToken'
+      localStorage.removeItem('userData'); // ✅ Nettoyage cohérent avec intercepteurs
+      setUser(null);
+      setToken(null);
+    }
   };
 
   return (
