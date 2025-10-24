@@ -85,10 +85,10 @@ api.interceptors.response.use(
 // ===============================
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
-  superAdminLogin: (data) => api.post(AUTH.SUPER_ADMIN_LOGIN, data),
-  register: (userData) => api.post(AUTH.REGISTER, userData),
-  logout: () => api.post(AUTH.LOGOUT),
-  getProfile: () => api.get(AUTH.PROFILE),
+  superAdminLogin: (data) => api.post('/auth/super-admin/login', data),
+  register: (userData) => api.post('/auth/register', userData),
+  logout: () => api.post('/auth/logout'),
+  getProfile: () => api.get('/auth/profile'),
 };
 
 // ===============================
@@ -96,29 +96,29 @@ export const authAPI = {
 // ===============================
 export const adminAPI = {
   users: {
-    list: (params) => api.get(ADMIN.USERS, { params }),
-    toggleStatus: (userId, is_active) => api.patch(ADMIN.USER_STATUS(userId), { is_active }),
+    list: (params) => api.get('/admin/users', { params }),
+    toggleStatus: (userId, is_active) => api.patch(`/admin/users/${usersId}/status`),
   },
   withdrawals: {
-    list: () => api.get(ADMIN.WITHDRAWALS),
-    approve: (id) => api.patch(ADMIN.WITHDRAW_APPROVE(id)),
-    reject: (id, reason) => api.patch(ADMIN.WITHDRAW_REJECT(id), { reason }),
+    list: () => api.get('/admin/withdrawals'),
+    approve: (id) => api.patch(`/admin/withdrawals/${id}/approve`),
+    reject: (id, reason) => api.patch(`/admin/withdrawals/${id}/reject`, { reason }),
   },
   stats: {
-    dashboard: () => api.get(ADMIN.STATS_DASHBOARD),
-    exportExcel: () => api.get(ADMIN.STATS_EXPORT_EXCEL, { responseType: 'blob' }),
-    exportPDF: () => api.get(ADMIN.STATS_EXPORT_PDF, { responseType: 'blob' }),
+    dashboard: () => api.get('/admin/stats/dashbord'),
+    exportExcel: () => api.get('/admin/stats/export/excel', { responseType: 'blob' }),
+    exportPDF: () => api.get('/admin/stats/export/pdf', { responseType: 'blob' }),
   },
   commission: {
-    update: (settings) => api.put(ADMIN.COMMISSION_SETTINGS, settings),
+    update: (settings) => api.put('/admin/commision/setting', settings),
   },
   settings: {
-    get: () => api.get(ADMIN.SETTINGS),
-    update: (data) => api.put(ADMIN.SETTINGS, data),
+    get: () => api.get('/admin/settings'),
+    update: (data) => api.put('/admin/settings', data),
   },
   logs: {
-    get: () => api.get(ADMIN.LOGS),
-    getByAction: (action) => api.get(ADMIN.LOGS_BY_ACTION(action)),
+    get: () => api.get('/admin/logs'),
+    getByAction: (action) => api.get(`/admin/logs/action/${action}`),
   },
 };
 
@@ -127,19 +127,19 @@ export const adminAPI = {
 // ===============================
 export const freelanceAPI = {
   missions: {
-    list: (params) => api.get(FREELANCE.MISSIONS, { params }),
-    getById: (id) => api.get(FREELANCE.MISSION_BY_ID(id)),
-    create: (data) => api.post(FREELANCE.MISSIONS, data),
-    apply: (data) => api.post(FREELANCE.APPLY, data),
+    list: (params) => api.get('/freelance/missions', { params }),
+    getById: (id) => api.get(`/freelance/missions/${id}`),
+    create: (data) => api.post('freelance/missions', data),
+    apply: (data) => api.post('/freelance/missions/apply', data),
     acceptApplication: (applicationId) =>
-      api.post(FREELANCE.ACCEPT_APPLICATION, { application_id: applicationId }),
-    deliver: (data) => api.post(FREELANCE.DELIVER, data),
+      api.post('/freelance/missions/accept-application', { application_id: applicationId }),
+    deliver: (data) => api.post('/freelance/missions/deliver', data),
     validateDelivery: (deliveryId) =>
-      api.post(FREELANCE.VALIDATE_DELIVERY, { delivery_id: deliveryId }),
+      api.post('freelance/missions/validate-delivery', { delivery_id: deliveryId }),
   },
   applications: {
-    my: () => api.get(FREELANCE.MY_APPLICATIONS),
-    byMission: (missionId) => api.get(FREELANCE.APPLICATIONS_BY_MISSION(missionId)),
+    my: () => api.get('/freelance/application/my'),
+    byMission: (missionId) => api.get(`/freelance/applications/mission/${missionId}`),
   },
 };
 
@@ -147,37 +147,37 @@ export const freelanceAPI = {
 // PRODUITS (AVEC MÉTHODES AJOUTÉES)
 // ===============================
 export const productsAPI = {
-  all: (params) => api.get(PRODUCTS.BASE, { params }),
-  getById: (id) => api.get(PRODUCTS.BY_ID(id)),
-  my: () => api.get(PRODUCTS.MY),
+  all: (params) => api.get('/products', { params }),
+  getById: (id) => api.get(`/products/${id}`),
+  my: () => api.get('/products/my'),
   search: (query, params) =>
-    api.get(PRODUCTS.SEARCH, { params: { q: query, ...params } }),
+    api.get('/products/search', { params: { q: query, ...params } }),
   // ✅ MÉTHODES AJOUTÉES
-  create: (data) => api.post(PRODUCTS.BASE, data),
-  update: (id, data) => api.put(PRODUCTS.BY_ID(id), data),
-  delete: (id) => api.delete(PRODUCTS.BY_ID(id)),
+  create: (data) => api.post('/products', data),
+  update: (id, data) => api.put(`/products/${id}`, data),
+  delete: (id) => api.delete(`/products/${id}`),
 };
 
 // ===============================
 // COMMANDES
 // ===============================
 export const ordersAPI = {
-  all: () => api.get(ORDERS.BASE),
-  my: () => api.get(ORDERS.MY),
-  sales: () => api.get(ORDERS.SALES),
-  updateStatus: (id, status) => api.patch(ORDERS.UPDATE_STATUS(id), { status }),
+  all: () => api.get('/orders'),
+  my: () => api.get('/orders/my'),
+  sales: () => api.get('/orders/sales'),
+  updateStatus: (id, status) => api.patch(`/ordres/${id}/status`),
 };
 
 // ===============================
 // RETRAITS / WALLET (AVEC MÉTHODES AJOUTÉES)
 // ===============================
 export const withdrawalsAPI = {
-  all: () => api.get(WITHDRAWALS.BASE),
-  my: () => api.get(WITHDRAWALS.MY),
-  adminAll: () => api.get(WITHDRAWALS.ADMIN_ALL),
+  all: () => api.get('/withdrawals'),
+  my: () => api.get('/withdrawals/my'),
+  adminAll: () => api.get('/admin/withdrawals/all'),
   // ✅ MÉTHODES AJOUTÉES
-  create: (data) => api.post(WITHDRAWALS.BASE, data),
-  cancel: (id) => api.delete(`${WITHDRAWALS.BASE}/${id}`),
+  create: (data) => api.post('/withdrawals', data),
+  cancel: (id) => api.delete(`${withdrawals}/${id}`),
 };
 
 // ===============================
@@ -185,32 +185,32 @@ export const withdrawalsAPI = {
 // ===============================
 export const filesAPI = {
   upload: (formData) =>
-    api.post(FILES.UPLOAD, formData, {
+    api.post('/files/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  signedUrl: (id) => api.get(FILES.SIGNED_URL(id)),
-  publicUrl: (id) => api.get(FILES.PUBLIC_URL(id)),
-  delete: (id) => api.delete(FILES.DELETE(id)),
+  signedUrl: (id) => api.get(`/files/${id}/signed-url`),
+  publicUrl: (id) => api.get(`/files/${id}/public-url`),
+  delete: (id) => api.delete(`/files/${id}`),
 };
 
 // ===============================
 // PAIEMENT FEDAPAY
 // ===============================
 export const fedapayAPI = {
-  adminKeys: () => api.get(FEDAPAY.ADMIN_KEYS),
-  setKeys: (data) => api.post(FEDAPAY.ADMIN_KEYS, data),
-  initPayment: (data) => api.post(FEDAPAY.INIT_PAYMENT, data),
-  initEscrow: (data) => api.post(FEDAPAY.INIT_ESCROW, data),
+  adminKeys: () => api.get('/admin/fedapay/keys'),
+  setKeys: (data) => api.post('/admin/fedapay/keys', data),
+  initPayment: (data) => api.post('/fedapay/init-payment', data),
+  initEscrow: (data) => api.post('/fedapay/init-ecrow', data),
 };
 
 // ===============================
 // TRANSACTIONS / PAYMENTS
 // ===============================
 export const paymentsAPI = {
-  transactions: () => api.get(PAYMENTS.TRANSACTIONS),
-  getById: (id) => api.get(PAYMENTS.BY_ID(id)),
-  init: (data) => api.post(PAYMENTS.INIT, data),
-  verify: (data) => api.post(PAYMENTS.VERIFY, data),
+  transactions: () => api.get('/transactions'),
+  getById: (id) => api.get(`/transaction/${id}`),
+  init: (data) => api.post('/transactions/init', data),
+  verify: (data) => api.post('/transactions/verify', data),
 };
 
 // ===============================
