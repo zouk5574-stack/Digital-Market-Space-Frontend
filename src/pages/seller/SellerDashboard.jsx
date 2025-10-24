@@ -1,4 +1,3 @@
-// src/pages/seller/SellerDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useProductsApi, useOrdersApi, useFreelanceApi, useStatsApi } from '../../hooks/useApi';
 import Button from '../../components/ui/Button';
@@ -10,6 +9,7 @@ import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import ProductModal from '../../components/admin/ProductModal';
 import ServiceModal from '../../components/modals/ServiceModal';
 import WithdrawalModal from '../../components/admin/WithdrawalModal';
+import ProductList from '../../components/products/ProductList';
 import toast from 'react-hot-toast';
 
 const SellerDashboard = () => {
@@ -45,7 +45,7 @@ const SellerDashboard = () => {
         toast.error('Erreur lors du chargement des données');
       }
     };
-    
+
     loadData();
   }, []);
 
@@ -109,6 +109,7 @@ const SellerDashboard = () => {
             {[
               { key: 'overview', label: 'Vue Générale' },
               { key: 'products', label: 'Mes Produits' },
+              { key: 'boutique', label: 'Boutique' },
               { key: 'sales', label: 'Mes Ventes' },
               { key: 'missions', label: 'Missions Freelance' },
               { key: 'applications', label: 'Mes Candidatures' },
@@ -162,6 +163,27 @@ const SellerDashboard = () => {
                 { label: 'Supprimer', onClick: handleDeleteProduct },
               ]}
             />
+          </section>
+        )}
+
+        {/* BOUTIQUE AVEC ProductList */}
+        {activeTab === 'boutique' && (
+          <section className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Boutique Vendeur</h2>
+                <p className="text-gray-600 mt-1">Gérez vos produits en vente avec interface avancée</p>
+              </div>
+              <Button 
+                onClick={() => setProductModal({ isOpen: true, product: null })}
+                variant="primary"
+              >
+                + Nouveau Produit
+              </Button>
+            </div>
+            <div className="bg-white shadow rounded-lg">
+              <ProductList />
+            </div>
           </section>
         )}
 
