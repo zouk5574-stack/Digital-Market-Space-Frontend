@@ -17,11 +17,12 @@ const PlatformSettingsModal = ({ isOpen, onClose }) => {
     if (!isOpen) return;
     const fetchSettings = async () => {
       try {
-        const { data } = await adminAPI.settings.get(); // ✅ plus spécifique
+        const { data } = await adminAPI.settings.get();
+        // ✅ Correction : mapping correct des champs backend
         setSettings({
-          platformName: data.platformName || '',
+          platformName: data.platform_name || '',
           currency: data.currency || 'XOF',
-          defaultCommission: data.commissionRate || 10
+          defaultCommission: data.default_commission || 10
         });
       } catch (err) {
         console.error('Erreur récupération des paramètres:', err);
@@ -41,7 +42,12 @@ const PlatformSettingsModal = ({ isOpen, onClose }) => {
 
     setLoading(true);
     try {
-      await adminAPI.settings.update(settings);
+      // ✅ Correction : structure de données adaptée au backend
+      await adminAPI.settings.update({
+        platform_name: settings.platformName,
+        currency: settings.currency,
+        default_commission: settings.defaultCommission
+      });
       onClose();
     } catch (err) {
       console.error('Erreur sauvegarde paramètres:', err);
