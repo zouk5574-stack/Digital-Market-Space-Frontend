@@ -1,5 +1,6 @@
 // src/pages/seller/SellerDashboard.jsx
 import React, { useState, useEffect } from 'react';
+import { useProductsApi, useOrdersApi, useFreelanceApi, useStatsApi } from '../../hooks/useApi';
 import Button from '../../components/ui/Button';
 import StatsCard from '../../components/dashboard/StatsCard';
 import DataTable from '../../components/dashboard/DataTable';
@@ -8,8 +9,8 @@ import ErrorModal from '../../components/ui/ErrorModal';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import ProductModal from '../../components/admin/ProductModal';
 import ServiceModal from '../../components/modals/ServiceModal';
-import WithdrawalModal from '../../components/admin/withdrawalModal';
-import { productsAPI, ordersAPI, freelanceAPI, statsAPI } from '../../services/api';
+import WithdrawalModal from '../../components/admin/WithdrawalModal';
+import toast from 'react-hot-toast';
 
 const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -20,40 +21,40 @@ const SellerDashboard = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null, onConfirm: null });
   const [productModal, setProductModal] = useState({ isOpen: false, product: null });
   const [serviceModal, setServiceModal] = useState({ isOpen: false, service: null });
-  const [withdrawalModal, setwithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
+  const [withdrawalModal, setWithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
 
-  // Data
-  const [stats, setStats] = useState({});
-  const [products, setProducts] = useState([]);
-  const [sales, setSales] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [missions, setMissions] = useState([]);
+  // Data avec hooks API standardisés
+  const { actions: productsActions, states: productsStates } = useProductsApi();
+  const { actions: ordersActions, states: ordersStates } = useOrdersApi();
+  const { actions: freelanceActions, states: freelanceStates } = useFreelanceApi();
+  const { actions: statsActions, states: statsStates } = useStatsApi();
 
-  // ==================== Fonctions ====================
-  const refreshData = async () => {
-    try {
-      const [statsRes, productsRes, salesRes, applicationsRes, missionsRes] = await Promise.all([
-        statsAPI.user(),
-        productsAPI.my(),
-        ordersAPI.sales(),
-        freelanceAPI.applications.my(),
-        freelanceAPI.missions.list()
-      ]);
-
-      setStats(statsRes.data?.stats || {});
-      setProducts(productsRes.data || []);
-      setSales(salesRes.data || []);
-      setApplications(applicationsRes.data || []);
-      setMissions(missionsRes.data || []);
-    } catch (err) {
-      console.error(err);
-      setErrorModal({ isOpen: true, message: 'Erreur lors du chargement initial.' });
-    }
-  };
-
+  // ==================== Chargement des données ====================
   useEffect(() => {
-    refreshData();
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          statsActions.getUserStats(),
+          productsActions.getMyProducts(),
+          ordersActions.getMySales(),
+          freelanceActions.getMyApplications(),
+          freelanceActions.getMyMissions()
+        ]);
+      } catch (err) {
+        console.error(err);
+        toast.error('Erreur lors du chargement des données');
+      }
+    };
+    
+    loadData();
   }, []);
+
+  // Données transformées
+  const stats = statsStates.userStats.data || {};
+  const products = productsStates.myProducts.data || [];
+  const sales = ordersStates.sales.data || [];
+  const applications = freelanceStates.applications.data || [];
+  const missions = freelanceStates.myMissions.data || [];
 
   const handleDeleteProduct = (product) => {
     setDeleteModal({
@@ -61,11 +62,12 @@ const SellerDashboard = () => {
       item: product,
       onConfirm: async () => {
         try {
-          await productsAPI.delete(product.id);
-          await refreshData();
+          await productsActions.deleteProduct(product.id);
+          await productsActions.getMyProducts();
           setDeleteModal({ isOpen: false, item: null, onConfirm: null });
+          toast.success('Produit supprimé avec succès');
         } catch {
-          setErrorModal({ isOpen: true, message: 'Impossible de supprimer le produit.' });
+          toast.error('Impossible de supprimer le produit');
         }
       }
     });
@@ -75,7 +77,6 @@ const SellerDashboard = () => {
     setServiceModal({ isOpen: true, service: mission });
   };
 
-  // ==================== Render ====================
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
@@ -95,7 +96,7 @@ const SellerDashboard = () => {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => setwithdrawalModal({ isOpen: true, walletBalance: stats.totalSellerEarnings || 0 })}
+              onClick={() => setWithdrawalModal({ isOpen: true, walletBalance: stats.total_seller_earnings || 0 })}
             >
               Retrait
             </Button>
@@ -133,11 +134,11 @@ const SellerDashboard = () => {
         {activeTab === 'overview' && (
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             <StatsCard title="Produits Actifs" value={products.length} icon="📦" color="blue" />
-            <StatsCard title="Ventes Totales" value={stats.salesCount || 0} icon="💰" color="green" />
-            <StatsCard title="Gains Nets" value={`${stats.totalSellerEarnings || 0} XOF`} icon="🎯" color="purple" />
-            <StatsCard title="Missions Actives" value={missions?.filter(m => m.status === 'in_progress')?.length || 0} icon="⚡" color="orange" />
-            <StatsCard title="Missions Terminées" value={missions?.filter(m => m.status === 'completed')?.length || 0} icon="✅" color="emerald" />
-            <StatsCard title="Candidatures" value={applications?.length || 0} icon="📝" color="yellow" />
+            <StatsCard title="Ventes Totales" value={stats.sales_count || 0} icon="💰" color="green" />
+            <StatsCard title="Gains Nets" value={`${stats.total_seller_earnings || 0} XOF`} icon="🎯" color="purple" />
+            <StatsCard title="Missions Actives" value={missions.filter(m => m.status === 'in_progress').length} icon="⚡" color="orange" />
+            <StatsCard title="Missions Terminées" value={missions.filter(m => m.status === 'completed').length} icon="✅" color="emerald" />
+            <StatsCard title="Candidatures" value={applications.length} icon="📝" color="yellow" />
           </section>
         )}
 
@@ -150,7 +151,7 @@ const SellerDashboard = () => {
             <DataTable
               data={products}
               columns={[
-                { key: 'name', label: 'Nom' },
+                { key: 'title', label: 'Nom' },
                 { key: 'description', label: 'Description' },
                 { key: 'price', label: 'Prix', format: v => `${v} XOF` },
                 { key: 'category', label: 'Catégorie' },
@@ -167,13 +168,13 @@ const SellerDashboard = () => {
         {activeTab === 'missions' && (
           <section className="bg-white shadow rounded-lg overflow-hidden">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b px-6 py-4 gap-4">
-              <h3 className="text-lg font-medium text-gray-900">Missions Freelance ({missions?.length || 0})</h3>
+              <h3 className="text-lg font-medium text-gray-900">Missions Freelance ({missions.length})</h3>
             </div>
             <DataTable
               data={missions}
               columns={[
-                { key: 'mission.title', label: 'Titre', format: (v, row) => row.mission?.title || 'N/A' },
-                { key: 'mission.price', label: 'Prix', format: (v, row) => `${row.mission?.price || 0} XOF` },
+                { key: 'title', label: 'Titre' },
+                { key: 'budget', label: 'Prix', format: v => `${v} XOF` },
                 { key: 'status', label: 'Statut' },
                 { key: 'created_at', label: 'Date', format: v => new Date(v).toLocaleDateString() },
               ]}
@@ -189,8 +190,16 @@ const SellerDashboard = () => {
       </main>
 
       {/* Modales */}
-      <InfoModal isOpen={infoModal.isOpen} onClose={() => setInfoModal({ isOpen: false, message: '' })} message={infoModal.message} />
-      <ErrorModal isOpen={errorModal.isOpen} onClose={() => setErrorModal({ isOpen: false, message: '' })} message={errorModal.message} />
+      <InfoModal 
+        isOpen={infoModal.isOpen} 
+        onClose={() => setInfoModal({ isOpen: false, message: '' })} 
+        message={infoModal.message} 
+      />
+      <ErrorModal 
+        isOpen={errorModal.isOpen} 
+        onClose={() => setErrorModal({ isOpen: false, message: '' })} 
+        message={errorModal.message} 
+      />
       <DeleteConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, item: null, onConfirm: null })}
@@ -200,7 +209,7 @@ const SellerDashboard = () => {
         isOpen={productModal.isOpen}
         onClose={() => setProductModal({ isOpen: false, product: null })}
         product={productModal.product}
-        onSaved={refreshData}
+        onSaved={() => productsActions.getMyProducts()}
       />
       <ServiceModal
         isOpen={serviceModal.isOpen}
@@ -211,7 +220,10 @@ const SellerDashboard = () => {
         isOpen={withdrawalModal.isOpen}
         onClose={() => setWithdrawalModal({ isOpen: false, walletBalance: 0 })}
         walletBalance={withdrawalModal.walletBalance}
-        onSuccess={() => { refreshData(); setInfoModal({ isOpen: true, message: 'Retrait effectué avec succès 💸' }); }}
+        onSuccess={() => { 
+          statsActions.getUserStats(); 
+          toast.success('Retrait effectué avec succès 💸'); 
+        }}
       />
     </div>
   );
