@@ -13,6 +13,9 @@ import HomePage from './pages/auth/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
+// ➕ AJOUTEZ CET IMPORT :
+import ProductList from './components/products/ProductList';
+
 // ✅ Dashboards
 import AdminDashboard from './pages/admin/AdminDashboard';
 import SellerDashboard from './pages/seller/SellerDashboard';
@@ -76,6 +79,9 @@ const AppRoutes = () => (
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      
+      {/* ➕ AJOUTEZ CETTE ROUTE PRODUITS (publique) : */}
+      <Route path="/products" element={<ProductList />} />
 
       {/* Dashboards avec protection de rôle */}
       <Route
