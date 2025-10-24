@@ -1,0 +1,35 @@
+/* ========================================= */
+/* 🚀 DIGITAL MARKET SPACE - STYLES GLOBAUX */
+/* ========================================= */
+
+/* Import du système de design unifié */
+@import url('./styles/Global.css');
+
+/* Styles de base pour tout le projet */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text-dark);
+  line-height: 1.6;
+}
+
+/* Assurer que les styles s'appliquent partout */
+#root, .app, .main-content, .page-content {
+  min-height: 100vh;
+}
+
+/* Forcer l'application des styles globaux */
+div, section, article, main, header, footer, nav, aside {
+  box-sizing: border-box;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
