@@ -84,7 +84,7 @@ api.interceptors.response.use(
 // AUTHENTIFICATION
 // ===============================
 export const authAPI = {
-  login: (credentials) => api.post(AUTH.LOGIN, credentials),
+  login: (credentials) => api.post('/auth/login', credentials),
   superAdminLogin: (data) => api.post(AUTH.SUPER_ADMIN_LOGIN, data),
   register: (userData) => api.post(AUTH.REGISTER, userData),
   logout: () => api.post(AUTH.LOGOUT),
