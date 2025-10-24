@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useStatsApi, useOrdersApi, useProductsApi, useFreelanceApi } from '../../hooks/useApi';
-import { FEDAPAY } from '../../services/endpoints';
-import api from '../../services/api';
+import { fedapayAPI } from '../../services/api';
 import Button from '../../components/ui/Button';
 import StatsCard from '../../components/dashboard/StatsCard';
 import ProductCard from '../../components/products/ProductCard';
 import MissionModal from '../../components/freelance/MissionModal';
+import toast from 'react-hot-toast';
 
 const BuyerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -19,56 +19,60 @@ const BuyerDashboard = () => {
   useEffect(() => {
     statsActions.getUserStats();
     ordersActions.getMyOrders();
-    productsActions.getAll();
+    productsActions.getAllProducts();
     freelanceActions.getMyMissions();
   }, []);
 
-  const stats = statsStates.userStats.data?.stats || {};
+  const stats = statsStates.userStats.data || {};
   const orders = ordersStates.orders.data || [];
   const products = productsStates.products.data || [];
-  const missions = freelanceStates.missions.data || [];
+  const missions = freelanceStates.myMissions.data || [];
 
   // 🔹 Fonction achat produit → redirection Fedapay
   const handleBuy = async (product) => {
     try {
-      const res = await api.post(FEDAPAY.PAY_PRODUCT, { product_id: product.id });
-      if (res.data?.payment_url) {
-        window.location.href = res.data.payment_url; // redirige vers Fedapay
+      const response = await fedapayAPI.initPayment({ 
+        product_id: product.id,
+        amount: product.price,
+        currency: 'XOF'
+      });
+      
+      if (response.data?.url) {
+        window.location.href = response.data.url;
       } else {
-        alert("Erreur : lien de paiement introuvable.");
+        toast.error('Lien de paiement introuvable');
       }
     } catch (err) {
       console.error('Erreur paiement :', err);
-      alert('Une erreur est survenue lors du paiement.');
+      toast.error('Une erreur est survenue lors du paiement');
     }
   };
 
   // 🔹 Valider une livraison (Escrow)
-  const handleValidateDelivery = async (mission) => {
+  const handleValidateDelivery = async (missionId) => {
     try {
-      await api.put(`/freelance/missions/${mission.id}/validate-delivery`);
-      alert("Livraison validée ✅ — les fonds seront libérés au vendeur.");
+      await freelanceActions.validateDelivery(missionId);
+      toast.success('Livraison validée ✅ — les fonds seront libérés au vendeur.');
       freelanceActions.getMyMissions();
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de la validation de la livraison.");
+      toast.error('Erreur lors de la validation de la livraison');
     }
   };
 
   // 🔹 Créer une mission (avec Escrow à la création)
   const handleCreateMission = async (missionData) => {
     try {
-      const res = await api.post('/freelance/missions', missionData);
-      if (res.data?.payment_url) {
-        window.location.href = res.data.payment_url; // Fedapay escrow
+      const response = await fedapayAPI.initEscrow(missionData);
+      if (response.data?.url) {
+        window.location.href = response.data.url;
       } else {
-        alert('Mission créée sans lien de paiement.');
+        toast.error('Mission créée sans lien de paiement');
       }
       setShowMissionModal(false);
-      freelanceActions.getMyMissions();
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de la création de la mission.");
+      toast.error('Erreur lors de la création de la mission');
     }
   };
 
@@ -114,10 +118,30 @@ const BuyerDashboard = () => {
         {activeTab === 'overview' && (
           <section className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatsCard title="Achats Total" value={stats.purchasesCount} icon="🛒" color="blue" />
-              <StatsCard title="Dépenses Total" value={`${stats.totalPurchases || '0'} XOF`} icon="💰" color="purple" />
-              <StatsCard title="Commandes Validées" value={stats.successfulPurchasesCount} icon="✅" color="green" />
-              <StatsCard title="Missions Créées" value={missions.length} icon="🎯" color="orange" />
+              <StatsCard 
+                title="Achats Total" 
+                value={stats.purchases_count || 0} 
+                icon="🛒" 
+                color="blue" 
+              />
+              <StatsCard 
+                title="Dépenses Total" 
+                value={`${stats.total_purchases || '0'} XOF`} 
+                icon="💰" 
+                color="purple" 
+              />
+              <StatsCard 
+                title="Commandes Validées" 
+                value={stats.successful_purchases_count || 0} 
+                icon="✅" 
+                color="green" 
+              />
+              <StatsCard 
+                title="Missions Créées" 
+                value={missions.length} 
+                icon="🎯" 
+                color="orange" 
+              />
             </div>
           </section>
         )}
@@ -153,7 +177,7 @@ const BuyerDashboard = () => {
                   <div key={order.id} className="p-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                       <div>
-                        <h4 className="text-lg font-medium text-gray-900">Commande #{order.id.slice(0, 8)}</h4>
+                        <h4 className="text-lg font-medium text-gray-900">Commande #{order.id?.slice(0, 8)}</h4>
                         <div className="mt-2 space-y-1 text-sm text-gray-600">
                           <div>Total: {order.total_price} XOF</div>
                           <div>Date: {new Date(order.created_at).toLocaleDateString()}</div>
@@ -175,9 +199,9 @@ const BuyerDashboard = () => {
                             key={item.id}
                             variant="primary"
                             size="small"
-                            onClick={() => window.open(item.products?.file_url, '_blank')}
+                            onClick={() => window.open(item.product?.file_url, '_blank')}
                           >
-                            Télécharger {item.products?.title}
+                            Télécharger {item.product?.title}
                           </Button>
                         ))}
                       </div>
@@ -229,7 +253,7 @@ const BuyerDashboard = () => {
                         <Button
                           variant="primary"
                           size="small"
-                          onClick={() => handleValidateDelivery(mission)}
+                          onClick={() => handleValidateDelivery(mission.id)}
                         >
                           Valider Livraison
                         </Button>
