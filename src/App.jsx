@@ -21,10 +21,8 @@ import BuyerDashboard from './pages/buyer/BuyerDashboard';
 // ✅ Paiement
 import PaymentCallback from './pages/payment/PaymentCallback';
 
-// ✅ Styles globaux
-import './styles/Innovation.css';
-import './styles/Dashboard.css';
-import './styles/App.css';
+// ✅ STYLE GLOBAL UNIFIÉ (remplace les 3 fichiers)
+import './styles/Global.css';
 
 /* ============================
    🔒 Route privée standard
@@ -49,7 +47,7 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 /* ============================
-   🎨 Layout global
+   🎨 Layout global amélioré
 ============================ */
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -59,16 +57,18 @@ const Layout = ({ children }) => {
   const hideLayout = noLayoutRoutes.includes(location.pathname);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="app min-h-screen bg-gray-50">
       {!hideLayout && <Navbar />}
-      <main className="flex-grow">{children}</main>
+      <main className="main-content">
+        {children}
+      </main>
       {!hideLayout && <Footer />}
     </div>
   );
 };
 
 /* ============================
-   🧭 Routes principales
+   🧭 Routes principales optimisées
 ============================ */
 const AppRoutes = () => (
   <Layout>
@@ -78,9 +78,9 @@ const AppRoutes = () => (
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Dashboards */}
+      {/* Dashboards avec protection de rôle */}
       <Route
-        path="/admin/dashboard"
+        path="/admin/*"
         element={
           <RoleProtectedRoute allowedRoles={['admin', 'super_admin']}>
             <AdminDashboard />
@@ -88,7 +88,7 @@ const AppRoutes = () => (
         }
       />
       <Route
-        path="/seller/dashboard"
+        path="/seller/*"
         element={
           <RoleProtectedRoute allowedRoles={['seller', 'freelancer']}>
             <SellerDashboard />
@@ -96,7 +96,7 @@ const AppRoutes = () => (
         }
       />
       <Route
-        path="/buyer/dashboard"
+        path="/buyer/*"
         element={
           <RoleProtectedRoute allowedRoles={['buyer']}>
             <BuyerDashboard />
