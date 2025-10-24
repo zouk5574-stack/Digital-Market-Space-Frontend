@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import { useWithdrawalsApi } from '../../hooks/useApi';
+import { withdrawalsAPI } from '../../services/api'; // ✅ Correction : import direct
 
 const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }) => {
-  const { actions: withdrawalActions } = useWithdrawalsApi();
-
   const [formData, setFormData] = useState({
     amount: '',
     provider_id: '1', // Fedapay par défaut
@@ -20,8 +18,8 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
 
     setLoading(true);
     try {
-      // Crée la demande de retrait côté serveur
-      const res = await withdrawalActions.createWithdrawal({
+      // ✅ Correction : utilisation de l'API directe
+      const res = await withdrawalsAPI.create({
         amount: amountNumber,
         provider_id: formData.provider_id,
         account_number: formData.account_number
@@ -32,7 +30,7 @@ const WithdrawalModal = ({ isOpen, onClose, walletBalance, onWithdrawalSuccess }
 
       // Redirection vers Fedapay si l'URL est fournie par l'API
       if (res?.data?.payment_url) {
-        window.location.href = res.data.payment_url; // 🔗 redirection directe
+        window.location.href = res.data.payment_url;
       } else {
         alert('Retrait créé mais impossible de rediriger vers Fedapay.');
       }
