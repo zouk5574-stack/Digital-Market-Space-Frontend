@@ -25,33 +25,56 @@ import {
   Share,
   Visibility,
   Category,
-  Label
+  Label,
+  Person,
+  Edit,
+  Delete
 } from '@mui/icons-material';
 import CategoryFilter from './CategoryFilter';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 /**
- * Liste complète des produits avec filtrage avancé
- * Intégration totale du système de catégories et tags
+ * Liste des produits avec gestion intelligente des rôles :
+ * - Acheteurs : Voir TOUS les produits
+ * - Vendeurs/Admin : Voir uniquement LEURS produits
  */
 const ProductList = () => {
+  const { user } = useAuthContext();
   const [filters, setFilters] = useState({});
   const [page, setPage] = useState(1);
   const itemsPerPage = 12;
 
-  // 🔄 Récupération des produits avec filtres
+  // 🎯 Détection du rôle pour déterminer quelle API utiliser
+  const isBuyer = user?.role === 'buyer';
+  const isSellerOrAdmin = user?.role === 'seller' || user?.role === 'admin' || user?.role === 'freelancer';
+
+  // 🔄 Récupération des produits selon le rôle
   const { 
     data: products = [], 
     isLoading, 
     error,
     refetch
   } = useQuery({
-    queryKey: ['products', filters],
-    queryFn: () => productsAPI.all({ ...filters }),
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    queryKey: ['products', user?.role, filters],
+    queryFn: () => {
+      if (isBuyer) {
+        // ✅ ACHETEUR : Voir TOUS les produits avec filtres
+        return productsAPI.all({ ...filters });
+      } else {
+        // ✅ VENDEUR/ADMIN : Voir uniquement LEURS produits
+        return productsAPI.my();
+      }
+    },
+    staleTime: 2 * 60 * 1000,
   });
 
-  // 🎯 Application des filtres aux produits
+  // 🎯 Filtrage supplémentaire côté client pour les acheteurs
   const filteredProducts = useMemo(() => {
+    if (!isBuyer) {
+      // Vendeurs/Admin : Pas de filtrage supplémentaire (déjà filtré par l'API)
+      return products;
+    }
+
     let filtered = [...products];
 
     // Filtre par catégories
@@ -86,7 +109,7 @@ const ProductList = () => {
     }
 
     return filtered;
-  }, [products, filters]);
+  }, [products, filters, isBuyer]);
 
   // 📄 Pagination automatique
   const paginatedProducts = useMemo(() => {
@@ -110,13 +133,31 @@ const ProductList = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // 🛒 Fonction d'achat pour les acheteurs
+  const handleBuy = (product) => {
+    // Logique d'achat à implémenter
+    console.log('Achat du produit:', product);
+  };
+
+  // ✏️ Fonction d'édition pour les vendeurs
+  const handleEdit = (product) => {
+    // Logique d'édition à implémenter
+    console.log('Édition du produit:', product);
+  };
+
+  // 🗑️ Fonction de suppression pour les vendeurs
+  const handleDelete = (product) => {
+    // Logique de suppression à implémenter
+    console.log('Suppression du produit:', product);
+  };
+
   if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Chargement des produits...
+            {isBuyer ? 'Chargement de la boutique...' : 'Chargement de vos produits...'}
           </Typography>
         </Box>
       </Box>
@@ -142,72 +183,85 @@ const ProductList = () => {
 
   return (
     <Box p={3}>
-      {/* En-tête avec fil d'ariane */}
+      {/* En-tête avec informations selon le rôle */}
       <Breadcrumbs sx={{ mb: 3 }}>
         <Link color="inherit" href="/">
           Accueil
         </Link>
-        <Typography color="text.primary">Produits</Typography>
-        {filters.categories && filters.categories.length > 0 && (
-          <Typography color="text.primary">
-            {filters.categories.length} catégorie(s) sélectionnée(s)
-          </Typography>
-        )}
+        <Typography color="text.primary">
+          {isBuyer ? 'Boutique' : 'Mes Produits'}
+        </Typography>
       </Breadcrumbs>
 
       <Box display="flex" gap={3} flexDirection={{ xs: 'column', lg: 'row' }}>
-        {/* Sidebar des filtres */}
-        <Box width={{ xs: '100%', lg: 300 }} flexShrink={0}>
-          <CategoryFilter 
-            onFiltersChange={handleFiltersChange}
-            initialFilters={filters}
-          />
-          
-          {/* Statistiques des résultats */}
-          <Card sx={{ mt: 2, p: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Résultats de recherche
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              {filteredProducts.length} produit(s) trouvé(s)
-              {filters.search && ` pour "${filters.search}"`}
-            </Typography>
-          </Card>
-        </Box>
+        {/* Sidebar des filtres - UNIQUEMENT pour les acheteurs */}
+        {isBuyer && (
+          <Box width={{ xs: '100%', lg: 300 }} flexShrink={0}>
+            <CategoryFilter 
+              onFiltersChange={handleFiltersChange}
+              initialFilters={filters}
+            />
+            
+            {/* Statistiques des résultats */}
+            <Card sx={{ mt: 2, p: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Résultats de recherche
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                {filteredProducts.length} produit(s) trouvé(s)
+                {filters.search && ` pour "${filters.search}"`}
+              </Typography>
+            </Card>
+          </Box>
+        )}
 
         {/* Contenu principal */}
         <Box flex={1}>
           {/* En-tête des résultats */}
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h4" component="h1">
-              Nos Produits
-              {filteredProducts.length > 0 && (
-                <Typography variant="h6" component="span" color="textSecondary" sx={{ ml: 1 }}>
-                  ({filteredProducts.length})
-                </Typography>
-              )}
-            </Typography>
+            <div>
+              <Typography variant="h4" component="h1">
+                {isBuyer ? 'Boutique' : 'Mes Produits'}
+                {filteredProducts.length > 0 && (
+                  <Typography variant="h6" component="span" color="textSecondary" sx={{ ml: 1 }}>
+                    ({filteredProducts.length})
+                  </Typography>
+                )}
+              </Typography>
+              <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
+                {isBuyer 
+                  ? 'Découvrez tous les produits disponibles' 
+                  : 'Gérez vos produits en vente'
+                }
+              </Typography>
+            </div>
+
+            {/* Bouton d'action selon le rôle */}
+            {isSellerOrAdmin && (
+              <Button variant="contained" startIcon={<Edit />}>
+                Nouveau Produit
+              </Button>
+            )}
           </Box>
 
           {/* Grille des produits */}
           {paginatedProducts.length === 0 ? (
             <Box textAlign="center" py={6}>
               <Typography variant="h6" color="textSecondary" gutterBottom>
-                Aucun produit trouvé
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {products.length === 0 
-                  ? "Aucun produit n'est disponible pour le moment." 
-                  : "Aucun produit ne correspond à vos critères de recherche."
+                {isBuyer 
+                  ? "Aucun produit trouvé" 
+                  : "Vous n'avez pas encore de produits"
                 }
               </Typography>
-              {(filters.categories?.length > 0 || filters.tags?.length > 0 || filters.search) && (
-                <Button 
-                  variant="outlined" 
-                  sx={{ mt: 2 }}
-                  onClick={() => setFilters({})}
-                >
-                  Réinitialiser les filtres
+              <Typography variant="body2" color="textSecondary">
+                {isBuyer 
+                  ? "Aucun produit ne correspond à vos critères de recherche." 
+                  : "Commencez par créer votre premier produit pour le vendre."
+                }
+              </Typography>
+              {isSellerOrAdmin && (
+                <Button variant="outlined" sx={{ mt: 2 }}>
+                  Créer mon premier produit
                 </Button>
               )}
             </Box>
@@ -216,7 +270,13 @@ const ProductList = () => {
               <Grid container spacing={3}>
                 {paginatedProducts.map((product) => (
                   <Grid item xs={12} sm={6} md={4} key={product.id}>
-                    <ProductCard product={product} />
+                    <ProductCard 
+                      product={product} 
+                      userRole={user?.role}
+                      onBuy={handleBuy}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
                   </Grid>
                 ))}
               </Grid>
@@ -241,8 +301,11 @@ const ProductList = () => {
   );
 };
 
-// 🎴 Composant Carte Produit
-const ProductCard = ({ product }) => {
+// 🎴 Composant Carte Produit avec actions selon le rôle
+const ProductCard = ({ product, userRole, onBuy, onEdit, onDelete }) => {
+  const isBuyer = userRole === 'buyer';
+  const isSellerOrAdmin = userRole === 'seller' || userRole === 'admin' || userRole === 'freelancer';
+
   return (
     <Card 
       sx={{ 
@@ -282,6 +345,16 @@ const ProductCard = ({ product }) => {
           </Typography>
         </Box>
 
+        {/* Afficher le propriétaire pour les acheteurs */}
+        {isBuyer && product.owner && (
+          <Box display="flex" alignItems="center" gap={1} mb={1}>
+            <Person fontSize="small" color="action" />
+            <Typography variant="caption" color="textSecondary">
+              Vendu par {product.owner.name || product.owner.email}
+            </Typography>
+          </Box>
+        )}
+
         {/* Description */}
         <Typography 
           variant="body2" 
@@ -289,21 +362,13 @@ const ProductCard = ({ product }) => {
           sx={{ 
             mb: 2,
             display: '-webkit-box',
-            WebkitLineClamp: 2,
+            WebkitLineClamp: 3,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden'
           }}
         >
           {product.description}
         </Typography>
-
-        {/* Rating */}
-        <Box display="flex" alignItems="center" mb={2}>
-          <Rating value={product.rating || 0} readOnly size="small" />
-          <Typography variant="caption" color="textSecondary" sx={{ ml: 1 }}>
-            ({product.review_count || 0})
-          </Typography>
-        </Box>
 
         {/* Catégories */}
         {product.categories && product.categories.length > 0 && (
@@ -366,33 +431,47 @@ const ProductCard = ({ product }) => {
         )}
       </CardContent>
 
-      {/* Actions */}
+      {/* Actions selon le rôle */}
       <Box sx={{ p: 2, pt: 0 }}>
         <Box display="flex" gap={1}>
-          <Button
-            variant="contained"
-            startIcon={<ShoppingCart />}
-            fullWidth
-            size="small"
-          >
-            Acheter
-          </Button>
+          {isBuyer ? (
+            // ✅ ACTIONS ACHETEUR
+            <Button
+              variant="contained"
+              startIcon={<ShoppingCart />}
+              fullWidth
+              size="small"
+              onClick={() => onBuy(product)}
+            >
+              Acheter
+            </Button>
+          ) : (
+            // ✅ ACTIONS VENDEUR/ADMIN
+            <>
+              <Button
+                variant="outlined"
+                startIcon={<Edit />}
+                fullWidth
+                size="small"
+                onClick={() => onEdit(product)}
+              >
+                Modifier
+              </Button>
+              <Tooltip title="Supprimer">
+                <IconButton 
+                  size="small" 
+                  color="error"
+                  onClick={() => onDelete(product)}
+                >
+                  <Delete />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
           
           <Tooltip title="Voir les détails">
             <IconButton size="small" color="primary">
               <Visibility />
-            </IconButton>
-          </Tooltip>
-          
-          <Tooltip title="Ajouter aux favoris">
-            <IconButton size="small" color="secondary">
-              <Favorite />
-            </IconButton>
-          </Tooltip>
-          
-          <Tooltip title="Partager">
-            <IconButton size="small">
-              <Share />
             </IconButton>
           </Tooltip>
         </Box>
