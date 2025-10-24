@@ -75,21 +75,21 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="max-w-md w-full space-y-8 bg-white rounded-2xl shadow-xl p-8"
+          className="max-w-md w-full space-y-8 bg-white rounded-2xl shadow-xl p-6 sm:p-8"
         >
           {/* En-tête */}
-          <div className="text-center">
-            <h2 className="mt-6 text-3xl sm:text-4xl font-extrabold text-gray-900">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
               {isAdminLogin ? 'Connexion Administrateur' : 'Connexion'}
             </h2>
-            <p className="mt-2 text-sm sm:text-base text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               {isAdminLogin 
                 ? 'Accès réservé aux administrateurs' 
                 : 'Accédez à votre compte Digital Market Space'
@@ -99,14 +99,18 @@ const LoginPage = () => {
 
           {/* Message d'erreur */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2"
+            >
+              <div className="flex items-start space-x-3">
+                <svg className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <p className="ml-3 text-sm text-red-700">{error}</p>
+                <p className="text-sm text-red-700 leading-relaxed">{error}</p>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Formulaire */}
@@ -115,7 +119,7 @@ const LoginPage = () => {
             onSubmit={isAdminLogin ? handleAdminLogin : handleStandardLogin}
           >
             {!isAdminLogin ? (
-              <>
+              <div className="space-y-5">
                 <Input
                   label="Nom d'utilisateur ou Téléphone"
                   name="identifier"
@@ -134,9 +138,9 @@ const LoginPage = () => {
                   required
                   placeholder="Entrez votre mot de passe"
                 />
-              </>
+              </div>
             ) : (
-              <>
+              <div className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     label="Prénom"
@@ -175,7 +179,7 @@ const LoginPage = () => {
                   required
                   placeholder="Mot de passe administrateur"
                 />
-              </>
+              </div>
             )}
 
             <Button
@@ -184,6 +188,7 @@ const LoginPage = () => {
               size="large"
               fullWidth
               disabled={loading}
+              className="mt-2"
             >
               {loading
                 ? isAdminLogin ? 'Connexion Admin...' : 'Connexion...'
@@ -192,11 +197,11 @@ const LoginPage = () => {
           </form>
 
           {/* Liens supplémentaires */}
-          <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+          <div className="space-y-4 pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={toggleLoginMode}
-              className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+              className="w-full text-center text-sm text-indigo-600 hover:text-indigo-500 font-medium transition-colors py-2"
             >
               {isAdminLogin 
                 ? '← Retour à la connexion standard' 
@@ -204,22 +209,27 @@ const LoginPage = () => {
             </button>
 
             {!isAdminLogin && (
-              <p className="text-sm text-gray-600">
-                Nouveau sur Digital Market Space ?{' '}
-                <Link
-                  to="/register"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Créer un compte
-                </Link>
-              </p>
+              <div className="text-center space-y-2">
+                <p className="text-sm text-gray-600">
+                  Nouveau sur Digital Market Space ?{' '}
+                  <Link
+                    to="/register"
+                    className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
+                  >
+                    Créer un compte
+                  </Link>
+                </p>
+              </div>
             )}
           </div>
 
           {/* Indicateur de sécurité */}
-          <p className="mt-6 text-xs text-gray-500 text-center">
-            🔒 Vos données sont sécurisées et cryptées
-          </p>
+          <div className="text-center pt-4">
+            <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
+              <span>🔒</span>
+              <span>Vos données sont sécurisées et cryptées</span>
+            </p>
+          </div>
         </motion.div>
       </AnimatePresence>
     </div>
