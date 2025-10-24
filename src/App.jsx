@@ -18,6 +18,9 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import SellerDashboard from './pages/seller/SellerDashboard';
 import BuyerDashboard from './pages/buyer/BuyerDashboard';
 
+// ✅ Paiement
+import PaymentCallback from './pages/payment/PaymentCallback';
+
 // ✅ Styles globaux
 import './styles/Innovation.css';
 import './styles/Dashboard.css';
@@ -50,9 +53,9 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
 ============================ */
 const Layout = ({ children }) => {
   const location = useLocation();
-  const noLayoutRoutes = ['/login', '/register'];
+  const noLayoutRoutes = ['/login', '/register', '/payment/callback'];
 
-  // ❌ Cache Navbar et Footer sur login/register
+  // ❌ Cache Navbar et Footer sur login/register et callback paiement
   const hideLayout = noLayoutRoutes.includes(location.pathname);
 
   return (
@@ -71,8 +74,8 @@ const AppRoutes = () => (
   <Layout>
     <Routes>
       {/* Pages publiques */}
-      <Route path="/login" element={<HomePage />} />
-      <Route path="/" element={<LoginPage />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
       {/* Dashboards */}
@@ -100,6 +103,11 @@ const AppRoutes = () => (
           </RoleProtectedRoute>
         }
       />
+
+      {/* Callback Fedapay */}
+      <Route path="/payment/callback" element={<PaymentCallback />} />
+
+      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </Layout>
