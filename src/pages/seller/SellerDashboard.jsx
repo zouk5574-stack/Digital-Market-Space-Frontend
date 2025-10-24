@@ -10,6 +10,11 @@ import ProductModal from '../../components/admin/ProductModal';
 import ServiceModal from '../../components/modals/ServiceModal';
 import WithdrawalModal from '../../components/admin/WithdrawalModal';
 import ProductList from '../../components/products/ProductList';
+
+// 🆕 IMPORTATIONS POUR LES NOUVELLES FONCTIONNALITÉS
+import FreelanceChatSystem from '../../components/Chat/FreelanceChatSystem';
+import MissionDetails from '../../pages/freelance/MissionDetails';
+
 import toast from 'react-hot-toast';
 
 const SellerDashboard = () => {
@@ -22,6 +27,10 @@ const SellerDashboard = () => {
   const [productModal, setProductModal] = useState({ isOpen: false, product: null });
   const [serviceModal, setServiceModal] = useState({ isOpen: false, service: null });
   const [withdrawalModal, setWithdrawalModal] = useState({ isOpen: false, walletBalance: 0 });
+
+  // 🆕 ÉTATS POUR LES NOUVELLES FONCTIONNALITÉS
+  const [chatModal, setChatModal] = useState({ isOpen: false, missionId: null });
+  const [selectedMission, setSelectedMission] = useState(null);
 
   // Data avec hooks API standardisés
   const { actions: productsActions, states: productsStates } = useProductsApi();
@@ -75,6 +84,17 @@ const SellerDashboard = () => {
 
   const handleDeliverMission = (mission) => {
     setServiceModal({ isOpen: true, service: mission });
+  };
+
+  // 🆕 GESTIONNAIRES POUR LES NOUVELLES FONCTIONNALITÉS
+  const handleOpenChat = (mission) => {
+    setChatModal({ isOpen: true, missionId: mission.id });
+  };
+
+  const handleViewMissionDetails = (mission) => {
+    setSelectedMission(mission);
+    // Navigation vers la page de détails de mission
+    window.location.href = `/missions/${mission.id}`;
   };
 
   return (
@@ -202,8 +222,14 @@ const SellerDashboard = () => {
               ]}
               actions={m => {
                 const actions = [];
-                if (m.status === 'in_progress') actions.push({ label: 'Livrer', onClick: () => handleDeliverMission(m) });
+                if (m.status === 'in_progress') {
+                  actions.push(
+                    { label: 'Livrer', onClick: () => handleDeliverMission(m) },
+                    { label: 'Chat', onClick: () => handleOpenChat(m) } // 🆕 NOUVELLE ACTION
+                  );
+                }
                 if (m.delivery_file_url) actions.push({ label: 'Télécharger', onClick: () => window.open(m.delivery_file_url, '_blank') });
+                actions.push({ label: 'Détails', onClick: () => handleViewMissionDetails(m) }); // 🆕 NOUVELLE ACTION
                 return actions;
               }}
             />
@@ -247,6 +273,23 @@ const SellerDashboard = () => {
           toast.success('Retrait effectué avec succès 💸'); 
         }}
       />
+
+      {/* 🆕 MODALES POUR LES NOUVELLES FONCTIONNALITÉS */}
+      {chatModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl h-[80vh]">
+            <FreelanceChatSystem missionId={chatModal.missionId} />
+            <div className="p-4 border-t">
+              <Button 
+                onClick={() => setChatModal({ isOpen: false, missionId: null })}
+                variant="secondary"
+              >
+                Fermer
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
