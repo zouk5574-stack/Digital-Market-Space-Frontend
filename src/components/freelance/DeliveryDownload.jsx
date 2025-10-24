@@ -1,25 +1,21 @@
 // src/components/freelance/DeliveryDownload.jsx
 import React, { useState } from 'react';
-import { useFilesApi, useFreelanceApi } from '../../hooks/useApi';
+import { filesAPI, freelanceAPI } from '../../services/api'; // ✅ Import direct
 import Button from '../ui/Button';
 import Loader from '../ui/Loader';
 
 const DeliveryDownload = ({ mission, delivery }) => {
   const [loading, setLoading] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState(null);
-  
-  const { actions: filesActions } = useFilesApi();
-  const { actions: freelanceActions } = useFreelanceApi();
 
   const handleDownload = async () => {
     setLoading(true);
     try {
-      // Récupérer l'URL signée pour le fichier de livraison
-      const signedUrl = await filesActions.getSignedUrl(delivery.file_id);
-      setDownloadUrl(signedUrl.url);
+      // ✅ CORRECT : utilise filesAPI.signedUrl() ou filesAPI.publicUrl()
+      const signedUrl = await filesAPI.signedUrl(delivery.file_id);
+      setDownloadUrl(signedUrl.data.url);
       
-      // Ouvrir le téléchargement
-      window.open(signedUrl.url, '_blank');
+      window.open(signedUrl.data.url, '_blank');
     } catch (error) {
       console.error('Erreur téléchargement:', error);
       alert('Erreur lors du téléchargement');
@@ -35,9 +31,9 @@ const DeliveryDownload = ({ mission, delivery }) => {
 
     setLoading(true);
     try {
-      await freelanceActions.validateDelivery(delivery.id);
+      // ✅ CORRECT : utilise freelanceAPI.missions.validateDelivery()
+      await freelanceAPI.missions.validateDelivery(delivery.id);
       alert('Livraison validée ! Les fonds ont été transférés au vendeur.');
-      // Recharger les données de la mission
       window.location.reload();
     } catch (error) {
       console.error('Erreur validation:', error);
@@ -94,7 +90,7 @@ const DeliveryDownload = ({ mission, delivery }) => {
             </h4>
             <p className="text-sm text-yellow-700 mb-3">
               <strong>Fonds en attente:</strong> {mission.final_price} XOF<br/>
-              Téléchargez et vérifiez le travail puis valider la réception car 🚨 la confirmation automatique pour intervenir en cas de votre oublie.
+              Téléchargez et vérifiez le travail puis valider la réception.
             </p>
             
             <Button
