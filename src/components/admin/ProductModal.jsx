@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
-import { useProductsApi, filesAPI } from '../../hooks/useApi';
+import { productsAPI, filesAPI } from '../../services/api'; // ✅ Correction : import direct
 
-const ProductModal = ({ isOpen, onClose, product = null }) => {
-  const { actions: productActions } = useProductsApi();
+const ProductModal = ({ isOpen, onClose, product = null, onProductSaved }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -73,13 +72,24 @@ const ProductModal = ({ isOpen, onClose, product = null }) => {
 
     setSaving(true);
     try {
-      const productData = { name, description, price: Number(price), category, files };
+      const productData = { 
+        name, 
+        description, 
+        price: Number(price), 
+        category, 
+        files: files.map(f => f.id) // ✅ Envoi seulement les IDs des fichiers
+      };
+
       if (product) {
-        await productActions.updateProduct(product.id, productData);
+        // ✅ Correction : utilisation de l'API directe
+        await productsAPI.update(product.id, productData);
       } else {
-        await productActions.createProduct(productData);
+        await productsAPI.create(productData);
       }
-      await productActions.getMyProducts();
+
+      if (onProductSaved) {
+        onProductSaved();
+      }
       onClose();
     } catch (err) {
       console.error('Erreur sauvegarde produit:', err);
