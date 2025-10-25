@@ -64,7 +64,7 @@ const Layout = ({ children }) => {
   const hideLayout = noLayoutRoutes.includes(location.pathname);
 
   return (
-    <div className="app min-h-screen bg-gray-50">
+    <div className="app">
       {!hideLayout && <Navbar />}
       <main className="main-content">
         {children}
