@@ -1,0 +1,109 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#4f46e5" />
+    
+    <!-- PWA CONFIG -->
+    <meta name="description" content="Marketplace pour produits digitaux et services freelance" />
+    
+    <!-- MANIFEST -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- APPLE ICONS -->
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Digital Market Space" />
+    
+    <title>Digital Market Space</title>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <!-- PWA INSTALL SCRIPT -->
+    <script>
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('✅ PWA Service Worker enregistré');
+                    })
+                    .catch(function(error) {
+                        console.log('❌ Service Worker erreur:', error);
+                    });
+            });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('📱 PWA prête pour installation');
+            
+            // Montrer le bouton d'installation
+            showInstallButton();
+        });
+
+        function showInstallButton() {
+            // Créer un bouton d'installation flottant
+            const installBtn = document.createElement('button');
+            installBtn.innerHTML = '📱 Installer App';
+            installBtn.id = 'pwa-install-btn';
+            installBtn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #4f46e5;
+                color: white;
+                border: none;
+                padding: 12px 16px;
+                border-radius: 50px;
+                cursor: pointer;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+                font-weight: 600;
+                font-size: 14px;
+                transition: all 0.3s ease;
+            `;
+            
+            installBtn.onmouseover = () => {
+                installBtn.style.transform = 'scale(1.05)';
+                installBtn.style.background = '#3730a3';
+            };
+            
+            installBtn.onmouseout = () => {
+                installBtn.style.transform = 'scale(1)';
+                installBtn.style.background = '#4f46e5';
+            };
+
+            installBtn.onclick = async () => {
+                if (!deferredPrompt) return;
+                
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('🎉 PWA installée!');
+                    installBtn.remove();
+                }
+                
+                deferredPrompt = null;
+            };
+            
+            document.body.appendChild(installBtn);
+            
+            // Cacher après 15 secondes
+            setTimeout(() => {
+                const btn = document.getElementById('pwa-install-btn');
+                if (btn) btn.remove();
+            }, 15000);
+        }
+    </script>
+</body>
+</html>
