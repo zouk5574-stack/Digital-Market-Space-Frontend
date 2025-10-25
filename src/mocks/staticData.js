@@ -666,3 +666,135 @@ export const mockDeliveries = [
     created_at: '2024-02-01T14:30:00Z'
   }
 ];
+
+// 🆕 STRUCTURES POUR COMPOSANTS ADMIN
+export const mockPlatformSettings = {
+  platform_name: 'Digital Market Space',
+  currency: 'XOF',
+  default_commission: 10,
+  contact_email: 'digitalmarketspace488@gmail.com',
+  support_phone: '+2290140410161'
+};
+
+// 🆕 CONFIGURATION FEDAPAY DÉTAILLÉE
+export const mockFedapayConfig = {
+  public_key: 'pk_test_123456789',
+  secret_key: 'sk_test_123456789',
+  is_active: true,
+  webhook_url: 'https://api.digitalmarketspace.com/webhooks/fedapay',
+  test_mode: true
+};
+
+// 🆕 TRANSACTIONS DÉTAILLÉES
+export const mockTransactions = [
+  {
+    id: 'tx_001',
+    order_id: 'order_001',
+    user_id: 'user_001',
+    amount: 299.99,
+    type: 'purchase',
+    status: 'completed',
+    payment_method: 'fedapay',
+    created_at: '2024-01-26T10:30:00Z',
+    metadata: {
+      product_id: 'prod_002',
+      product_name: 'Service Design Logo Premium'
+    }
+  },
+  {
+    id: 'tx_002',
+    order_id: 'order_002',
+    user_id: 'user_001',
+    amount: 149.99,
+    type: 'purchase',
+    status: 'completed',
+    payment_method: 'fedapay',
+    created_at: '2024-01-30T16:45:00Z',
+    metadata: {
+      product_id: 'prod_001',
+      product_name: 'Template E-commerce React'
+    }
+  }
+];
+
+// 🆕 RETRAITS ADMIN
+export const mockAdminWithdrawals = [
+  {
+    id: 'admin_with_001',
+    user_id: 'admin_001',
+    user_name: 'Admin System',
+    amount: 15000,
+    status: 'completed',
+    payment_method: 'fedapay',
+    account_number: 'FA001',
+    created_at: '2024-02-01T10:00:00Z',
+    processed_at: '2024-02-01T14:30:00Z'
+  }
+];
+
+// 🆕 FICHIERS UPLOAD
+export const mockFiles = [
+  {
+    id: 'file_001',
+    filename: 'template-ecommerce.zip',
+    size_bytes: 15925248,
+    content_type: 'application/zip',
+    url: '/downloads/template-ecommerce.zip',
+    uploaded_by: 'user_003',
+    created_at: '2024-01-25T16:45:00Z'
+  },
+  {
+    id: 'file_delivery_001',
+    filename: 'mission-delivery.zip',
+    size_bytes: 25478963,
+    content_type: 'application/zip',
+    url: '/downloads/mission-delivery.zip',
+    uploaded_by: 'user_001',
+    created_at: '2024-02-01T14:30:00Z'
+  }
+];
+
+// 🆕 SESSIONS ACTIVES
+export const mockActiveSessions = [
+  {
+    id: 'session_001',
+    user_id: 'user_001',
+    user_email: 'jean.dupont@email.com',
+    ip_address: '192.168.1.100',
+    user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    created_at: '2024-02-01T14:00:00Z',
+    last_activity: '2024-02-01T15:30:00Z'
+  },
+  {
+    id: 'session_002',
+    user_id: 'user_002',
+    user_email: 'marie.martin@email.com',
+    ip_address: '192.168.1.101',
+    user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+    created_at: '2024-02-01T13:45:00Z',
+    last_activity: '2024-02-01T15:25:00Z'
+  }
+];
+
+// 🆕 STATISTIQUES ÉTENDUES
+export const mockExtendedStats = {
+  platform: {
+    total_earnings: 125000,
+    commission_earnings: 12500,
+    pending_withdrawals: 25000,
+    completed_withdrawals: 15000
+  },
+  products: {
+    total: 89,
+    published: 76,
+    draft: 13,
+    average_price: 316.65
+  },
+  users: {
+    total: 156,
+    buyers: 120,
+    sellers: 32,
+    admins: 4,
+    active_today: 45
+  }
+};
