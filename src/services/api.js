@@ -14,19 +14,21 @@
 // ===============================
 // 🔄 IMPORTS MOCKS (décommentez pour utiliser les mocks)
 // ===============================
-/*
+
+
 import {
   mockAuthAPI, mockProductsAPI, mockCategoriesAPI, mockTagsAPI,
   mockStatsAPI, mockOrdersAPI, mockPaymentsAPI, mockFedapayAPI,
   mockFreelanceAPI, mockWithdrawalsAPI, mockAdminAPI, mockProvidersAPI,
   mockFilesAPI, mockNotificationsAPI, mockChatAPI, mockAiAPI, mockAiExtraAPI
 } from './mockApiService';
-*/
+
 
 // ===============================
 // 🔄 IMPORTS RÉELS (décommentez pour utiliser le backend réel)
 // ===============================
-import axios from 'axios';
+
+/*import axios from 'axios';
 
 // ===============================
 // CONFIGURATION AXIOS (pour API réelle)
@@ -87,10 +89,13 @@ api.interceptors.response.use(
   }
 );
 
+*/
+
 // ===============================
 // ✅ EXPORTS MOCKS (décommentez pour utiliser les mocks)
 // ===============================
-/*
+
+
 export const authAPI = mockAuthAPI;
 export const productsAPI = mockProductsAPI;
 export const categoriesAPI = mockCategoriesAPI;
@@ -108,11 +113,14 @@ export const notificationsAPI = mockNotificationsAPI;
 export const chatAPI = mockChatAPI;
 export const aiAPI = mockAiAPI;
 export const aiExtraAPI = mockAiExtraAPI;
-*/
+
+
 
 // ===============================
 // ✅ EXPORTS RÉELS (décommentez pour utiliser le backend réel)
 // ===============================
+
+/*
 
 // AUTHENTIFICATION
 export const authAPI = {
@@ -296,11 +304,15 @@ export const tagsAPI = {
   delete: (id) => api.delete(`/tags/${id}`),
 };
 
+*/
+
 // ===============================
 // INDICATEUR DE MODE
 // ===============================
-console.log('🎯 Mode API: PRODUCTION (services réels activés)');
-// console.log('🎯 Mode API: MOCK (services mockés activés)');
+
+//console.log('🎯 Mode API: PRODUCTION (services réels activés)');
+
+console.log('🎯 Mode API: MOCK (services mockés activés)');
 
 // ===============================
 // EXPORT DEFAULT
