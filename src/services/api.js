@@ -275,7 +275,7 @@ export const categoriesAPI = {
 export const tagsAPI = {
   all: (params) => api.get('/tags', { params }),
   create: (data) => api.post('/tags', data),
-  delete: (id) => api.delete(`${/tags}/${id}`),
+  delete: (id) => api.delete(`/tags/${id}`),
 };
 
 // ===============================
