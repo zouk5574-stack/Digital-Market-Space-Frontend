@@ -309,7 +309,12 @@ body {
   padding: 2rem 1.5rem;
   position: relative;
   overflow: hidden;
-  composes: majestic-card;
+  background: var(--color-card-bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow-subtle);
+  transition: var(--transition-bounce);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
 }
 
 .stat-card::before {
@@ -526,7 +531,7 @@ body {
   .grid-3 {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
-  
+
   .grid-4 {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
@@ -627,4 +632,4 @@ body {
   clip: rect(0, 0, 0, 0); 
   white-space: nowrap; 
   border: 0; 
-  }
+}
