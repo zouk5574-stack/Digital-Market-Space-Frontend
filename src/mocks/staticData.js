@@ -586,3 +586,83 @@ export const filterProductsByTag = (tagId) => {
     product.tags.some(tag => tag.id === tagId)
   );
 };
+
+// 🆕 AJOUTS POUR CHAT & MESSAGERIE
+export const mockChatConversations = [
+  {
+    id: 'conv_001',
+    mission_id: 'mission_001',
+    participants: ['user_001', 'user_002'],
+    other_user_name: 'Marie Martin',
+    mission_title: 'Développement Site E-commerce',
+    last_message_content: 'Je vais vous envoyer la première version demain',
+    last_message_at: '2024-02-01T16:30:00Z',
+    is_online: true,
+    unread_count: 2,
+    messages: [
+      {
+        id: 'msg_001',
+        sender_id: 'user_001',
+        content: 'Bonjour, où en êtes-vous sur le développement ?',
+        timestamp: '2024-01-30T10:00:00Z',
+        read: true
+      },
+      {
+        id: 'msg_002',
+        sender_id: 'user_002', 
+        content: 'Je vais vous envoyer la première version demain',
+        timestamp: '2024-02-01T16:30:00Z',
+        read: false
+      }
+    ]
+  }
+];
+
+// 🆕 AJOUTS POUR SÉCURITÉ
+export const mockSecuritySettings = {
+  two_factor_auth: false,
+  session_timeout: 30,
+  password_policy: {
+    min_length: 8,
+    require_uppercase: true,
+    require_numbers: true,
+    require_special_chars: false
+  },
+  login_attempts: {
+    max_attempts: 5,
+    lockout_duration: 30
+  },
+  backup_settings: {
+    auto_backup: true,
+    backup_frequency: 'daily',
+    retain_days: 30
+  }
+};
+
+// 🆕 AJOUTS POUR APPLICATIONS MISSIONS
+export const mockMissionApplications = [
+  {
+    id: 'app_001',
+    mission_id: 'mission_001',
+    freelancer_id: 'user_001',
+    freelancer_name: 'Jean Dupont',
+    proposal: 'Je propose de développer votre site e-commerce avec React et Node.js',
+    budget: 1200,
+    status: 'pending',
+    created_at: '2024-01-25T11:20:00Z',
+    delivery_time: '30 jours'
+  }
+];
+
+// 🆕 AJOUTS POUR LIVRAISONS
+export const mockDeliveries = [
+  {
+    id: 'delivery_001',
+    mission_id: 'mission_001',
+    freelancer_id: 'user_001',
+    delivery_note: 'Voici la première version du site e-commerce avec les fonctionnalités principales.',
+    file_id: 'file_delivery_001',
+    status: 'awaiting_validation',
+    created_at: '2024-02-01T14:30:00Z'
+  }
+];
