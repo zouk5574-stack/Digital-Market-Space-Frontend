@@ -1,10 +1,10 @@
 // src/mocks/staticData.js
 // =============================================
-// MOCK DATA FOR DIGITAL MARKET SPACE
+// MOCK DATA FOR DIGITAL MARKET SPACE - VERSION COMPLÈTE
 // Données réalistes pour développement frontend
 // =============================================
 
-// 🔐 AUTHENTIFICATION & UTILISATEURS
+// 🔐 AUTHENTIFICATION & UTILISATEURS (MIS À JOUR)
 export const mockUser = {
   id: 'user_001',
   firstname: 'Jean',
@@ -17,7 +17,9 @@ export const mockUser = {
   created_at: '2024-01-15T10:30:00Z',
   avatar_url: null,
   wallet_balance: 15000,
-  bio: 'Entrepreneur passionné par le digital'
+  bio: 'Entrepreneur passionné par le digital',
+  // NOUVEAU: Pour la navbar et layouts
+  name: 'Jean Dupont'
 };
 
 export const mockSeller = {
@@ -33,7 +35,9 @@ export const mockSeller = {
   avatar_url: null,
   wallet_balance: 45000,
   store_name: 'Digital Solutions Pro',
-  bio: 'Créatrice de contenus digitaux'
+  bio: 'Créatrice de contenus digitaux',
+  // NOUVEAU: Pour la navbar et layouts
+  name: 'Marie Martin'
 };
 
 export const mockAdmin = {
@@ -46,10 +50,12 @@ export const mockAdmin = {
   role: 'admin',
   is_active: true,
   created_at: '2024-01-01T00:00:00Z',
-  permissions: ['all']
+  permissions: ['all'],
+  // NOUVEAU: Pour la navbar et layouts
+  name: 'Admin System'
 };
 
-export const mockUsers = [mockUser, mockSeller];
+export const mockUsers = [mockUser, mockSeller, mockAdmin];
 
 // 🛒 CATÉGORIES
 export const mockCategories = [
@@ -300,6 +306,170 @@ export const mockPaymentProvider = {
   webhook_secret: 'whsec_123456789'
 };
 
+// 🆕 NOTIFICATIONS (NOUVEAU)
+export const mockNotifications = [
+  {
+    id: 'notif_001',
+    title: 'Nouvelle commande reçue',
+    message: 'Votre produit "Template E-commerce React" a été acheté',
+    type: 'order',
+    read: false,
+    created_at: '2024-02-01T14:30:00Z',
+    metadata: { order_id: 'order_001', product_id: 'prod_001' }
+  },
+  {
+    id: 'notif_002',
+    title: 'Paiement confirmé',
+    message: 'Votre retrait de 25,000 XOF a été approuvé',
+    type: 'withdrawal',
+    read: true,
+    created_at: '2024-01-30T09:15:00Z',
+    metadata: { withdrawal_id: 'with_001' }
+  },
+  {
+    id: 'notif_003',
+    title: 'Nouveau message',
+    message: 'Vous avez reçu un nouveau message sur votre mission',
+    type: 'message',
+    read: false,
+    created_at: '2024-02-01T16:45:00Z',
+    metadata: { mission_id: 'mission_001', conversation_id: 'conv_001' }
+  }
+];
+
+// 🆕 CONVERSATIONS IA (NOUVEAU)
+export const mockAIConversations = [
+  {
+    id: 'ai_conv_001',
+    title: 'Aide création produit digital',
+    last_message: 'Quel type de produit souhaitez-vous créer ?',
+    created_at: '2024-01-28T10:30:00Z',
+    updated_at: '2024-02-01T15:20:00Z',
+    messages: [
+      {
+        id: 'msg_001',
+        role: 'user',
+        content: 'Je veux créer un template e-commerce',
+        timestamp: '2024-01-28T10:30:00Z'
+      },
+      {
+        id: 'msg_002', 
+        role: 'assistant',
+        content: 'Quel type de template e-commerce souhaitez-vous créer ?',
+        timestamp: '2024-01-28T10:31:00Z'
+      }
+    ]
+  }
+];
+
+// 🆕 APPLICATIONS MISSIONS (NOUVEAU)
+export const mockMissionApplications = [
+  {
+    id: 'app_001',
+    mission_id: 'mission_001',
+    freelancer_id: 'user_001',
+    freelancer_name: 'Jean Dupont',
+    proposal: 'Je propose de développer votre site e-commerce avec React et Node.js',
+    budget: 1200,
+    status: 'pending',
+    created_at: '2024-01-25T11:20:00Z',
+    delivery_time: '30 jours'
+  }
+];
+
+// 🆕 PROVIDERS DE PAIEMENT (NOUVEAU)
+export const mockPaymentProviders = [
+  {
+    id: 'provider_001',
+    name: 'Fedapay',
+    type: 'payment_gateway',
+    is_active: true,
+    credentials: {
+      public_key: 'pk_test_123456789',
+      secret_key: 'sk_test_123456789'
+    },
+    created_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'provider_002', 
+    name: 'Stripe',
+    type: 'payment_gateway',
+    is_active: false,
+    credentials: {},
+    created_at: '2024-01-02T00:00:00Z'
+  }
+];
+
+// 🆕 MENU ITEMS POUR DASHBOARD (NOUVEAU)
+export const mockMenuItems = {
+  admin: [
+    { name: 'Tableau de bord', path: '/admin/dashboard' },
+    { name: 'Utilisateurs', path: '/admin/users' },
+    { name: 'Produits', path: '/admin/products' },
+    { name: 'Commandes', path: '/admin/orders' },
+    { name: 'Catégories', path: '/admin/categories' },
+    { name: 'Tags', path: '/admin/tags' },
+    { name: 'Paramètres', path: '/admin/settings' },
+    { name: 'Sécurité', path: '/admin/security' }
+  ],
+  buyer: [
+    { name: 'Vue Générale', path: '/buyer/dashboard' },
+    { name: 'Produits Digitaux', path: '/buyer/products' },
+    { name: 'Boutique', path: '/buyer/boutique' },
+    { name: 'Mes Achats', path: '/buyer/orders' },
+    { name: 'Mes Missions', path: '/buyer/missions' }
+  ],
+  seller: [
+    { name: 'Vue Générale', path: '/seller/dashboard' },
+    { name: 'Mes Produits', path: '/seller/products' },
+    { name: 'Boutique', path: '/seller/boutique' },
+    { name: 'Mes Ventes', path: '/seller/sales' },
+    { name: 'Missions Freelance', path: '/seller/missions' },
+    { name: 'Mes Candidatures', path: '/seller/applications' }
+  ]
+};
+
+// 🆕 CONTACT INFO POUR FOOTER (NOUVEAU)
+export const mockContactInfo = {
+  email: 'digitalmarketspace488@gmail.com',
+  phone: '+2290140410161',
+  address: 'Avenue du Digital\nMade in Bénin ** Valorisons La Tech Et L\'Innovation Béninoise **',
+  social_media: {
+    facebook: '#',
+    twitter: '#', 
+    instagram: '#',
+    linkedin: '#'
+  }
+};
+
+// 🆕 CHAT & MESSAGERIE (NOUVEAU)
+export const mockChatConversations = [
+  {
+    id: 'conv_001',
+    mission_id: 'mission_001',
+    participants: ['user_001', 'user_002'],
+    last_message: 'Je vais vous envoyer la première version demain',
+    last_message_at: '2024-02-01T16:30:00Z',
+    unread_count: 2,
+    messages: [
+      {
+        id: 'msg_001',
+        sender_id: 'user_001',
+        content: 'Bonjour, où en êtes-vous sur le développement ?',
+        timestamp: '2024-01-30T10:00:00Z',
+        read: true
+      },
+      {
+        id: 'msg_002',
+        sender_id: 'user_002', 
+        content: 'Je vais vous envoyer la première version demain',
+        timestamp: '2024-02-01T16:30:00Z',
+        read: false
+      }
+    ]
+  }
+];
+
 // 🔐 CRÉDENTIALS POUR TESTS
 export const mockCredentials = {
   standard: {
@@ -343,7 +513,7 @@ export const mockPaginatedResponse = (items, page = 1, pageSize = 12) => {
   const startIndex = (page - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedItems = items.slice(startIndex, endIndex);
-  
+
   return {
     items: paginatedItems,
     pagination: {
@@ -363,7 +533,7 @@ export const verifyCredentials = (identifier, password) => {
     (identifier === mockCredentials.standard.identifier || identifier === mockUser.tel) &&
     password === mockCredentials.standard.password
   );
-  
+
   return isStandardUser ? { 
     success: true, 
     user: mockUser, 
@@ -382,7 +552,7 @@ export const verifyAdminCredentials = (firstname, lastname, phone, adminPassword
     phone === mockCredentials.admin.phone &&
     adminPassword === mockCredentials.admin.adminPassword
   );
-  
+
   return isAdmin ? { 
     success: true, 
     user: mockAdmin, 
@@ -391,4 +561,28 @@ export const verifyAdminCredentials = (firstname, lastname, phone, adminPassword
     success: false, 
     error: 'Identifiants administrateur incorrects' 
   };
+};
+
+// Trouve un utilisateur par ID
+export const findUserById = (userId) => {
+  return mockUsers.find(user => user.id === userId) || mockUser;
+};
+
+// Trouve un produit par ID
+export const findProductById = (productId) => {
+  return mockProducts.find(product => product.id === productId) || mockProducts[0];
+};
+
+// Filtre les produits par catégorie
+export const filterProductsByCategory = (categoryId) => {
+  return mockProducts.filter(product => 
+    product.categories.some(cat => cat.id === categoryId)
+  );
+};
+
+// Filtre les produits par tag
+export const filterProductsByTag = (tagId) => {
+  return mockProducts.filter(product =>
+    product.tags.some(tag => tag.id === tagId)
+  );
 };
