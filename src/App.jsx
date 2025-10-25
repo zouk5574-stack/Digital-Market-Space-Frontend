@@ -3,6 +3,9 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuthContext } from './contexts/AuthContext';
 
+// ✅ STYLE GLOBAL - IMPORT PRINCIPAL
+import './styles/Global.css';
+
 // ✅ UI globales
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -28,9 +31,6 @@ import PaymentCallback from './pages/payment/PaymentCallback';
 import SecurityPanel from './components/Settings/SecurityPanel';
 import FreelanceChatSystem from './components/Chat/FreelanceChatSystem';
 import MissionDetails from './pages/freelance/MissionDetails';
-
-// ✅ STYLE GLOBAL UNIQUE (point d'entrée)
-import './styles/index.css';
 
 /* ============================
    🔒 Route privée standard
@@ -113,7 +113,7 @@ const AppRoutes = () => (
           </RoleProtectedRoute>
         }
       />
-      
+
       {/* 🆕 SOUS-ROUTES ADMIN POUR SÉCURITÉ */}
       <Route
         path="/admin/security"
