@@ -319,23 +319,23 @@ console.log('🎯 Mode API: MOCK (services mockés activés)');
 
 // Pour les composants qui utilisent encore l'import par défaut
 const api = {
-  auth: mockAuthAPI,
-  products: mockProductsAPI,
-  categories: mockCategoriesAPI,
-  tags: mockTagsAPI,
-  stats: mockStatsAPI,
-  orders: mockOrdersAPI,
-  payments: mockPaymentsAPI,
-  fedapay: mockFedapayAPI,
-  freelance: mockFreelanceAPI,
-  withdrawals: mockWithdrawalsAPI,
-  admin: mockAdminAPI,
-  providers: mockProvidersAPI,
-  files: mockFilesAPI,
-  notifications: mockNotificationsAPI,
-  chat: mockChatAPI,
-  aiAssistant: mockAIAssistantAPI,
-  security: mockSecurityAPI
+  auth: authAPI,
+  products: productsAPI,
+  categories: categoriesAPI,
+  tags: tagsAPI,
+  stats: statsAPI,
+  orders: ordersAPI,
+  payments: paymentsAPI,
+  fedapay: fedapayAPI,
+  freelance: freelanceAPI,
+  withdrawals: withdrawalsAPI,
+  admin: adminAPI,
+  providers: providersAPI,
+  files: filesAPI,
+  notifications: notificationsAPI,
+  chat: chatAPI,
+  aiAssistant: aiAssistantAPI,
+  security: securityAPI
 };
 
 export default api;
