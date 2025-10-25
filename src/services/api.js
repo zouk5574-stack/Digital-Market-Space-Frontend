@@ -15,20 +15,20 @@
 // 🔄 IMPORTS MOCKS (décommentez pour utiliser les mocks)
 // ===============================
 
-
 import {
   mockAuthAPI, mockProductsAPI, mockCategoriesAPI, mockTagsAPI,
   mockStatsAPI, mockOrdersAPI, mockPaymentsAPI, mockFedapayAPI,
   mockFreelanceAPI, mockWithdrawalsAPI, mockAdminAPI, mockProvidersAPI,
-  mockFilesAPI, mockNotificationsAPI, mockChatAPI, mockAiAPI, mockAiExtraAPI
+  mockFilesAPI, mockNotificationsAPI, mockChatAPI, mockAIAssistantAPI,
+  mockSecurityAPI
 } from './mockApiService';
-
 
 // ===============================
 // 🔄 IMPORTS RÉELS (décommentez pour utiliser le backend réel)
 // ===============================
 
-/*import axios from 'axios';
+/*
+import axios from 'axios';
 
 // ===============================
 // CONFIGURATION AXIOS (pour API réelle)
@@ -88,13 +88,11 @@ api.interceptors.response.use(
     return Promise.reject(err);
   }
 );
-
 */
 
 // ===============================
 // ✅ EXPORTS MOCKS (décommentez pour utiliser les mocks)
 // ===============================
-
 
 export const authAPI = mockAuthAPI;
 export const productsAPI = mockProductsAPI;
@@ -111,17 +109,14 @@ export const providersAPI = mockProvidersAPI;
 export const filesAPI = mockFilesAPI;
 export const notificationsAPI = mockNotificationsAPI;
 export const chatAPI = mockChatAPI;
-export const aiAPI = mockAiAPI;
-export const aiExtraAPI = mockAiExtraAPI;
-
-
+export const aiAssistantAPI = mockAIAssistantAPI;
+export const securityAPI = mockSecurityAPI;
 
 // ===============================
 // ✅ EXPORTS RÉELS (décommentez pour utiliser le backend réel)
 // ===============================
 
 /*
-
 // AUTHENTIFICATION
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
@@ -255,19 +250,26 @@ export const chatAPI = {
 };
 
 // IA ASSISTANT
-export const aiAPI = {
-  sendMessage: (data) => api.post('/ai/assistant/message', data),
-  generate: (data) => api.post('/ai/assistant/generate', data),
+export const aiAssistantAPI = {
   conversations: {
     list: (params) => api.get('/ai/assistant/conversations', { params }),
-    delete: (id) => api.delete(`/ai/assistant/conversation/${id}`),
+    getById: (id) => api.get(`/ai/assistant/conversations/${id}`),
+    create: (data) => api.post('/ai/assistant/conversations', data),
+    delete: (id) => api.delete(`/ai/assistant/conversations/${id}`),
   },
+  sendMessage: (conversationId, message) => 
+    api.post(`/ai/assistant/conversations/${conversationId}/messages`, { message }),
+  generate: (data) => api.post('/ai/assistant/generate', data),
 };
 
-// IA EXTRA
-export const aiExtraAPI = {
-  toolsList: () => api.get('/ai/assistant/tools'),
-  savePrompt: (data) => api.post('/ai/assistant/prompt/save', data),
+// SÉCURITÉ
+export const securityAPI = {
+  getSessions: () => api.get('/security/sessions'),
+  terminateSession: (sessionId) => api.delete(`/security/sessions/${sessionId}`),
+  getSecuritySettings: () => api.get('/security/settings'),
+  updateSecuritySettings: (data) => api.put('/security/settings', data),
+  getBackupStatus: () => api.get('/security/backup/status'),
+  triggerBackup: () => api.post('/security/backup/trigger'),
 };
 
 // STATISTIQUES
@@ -303,18 +305,37 @@ export const tagsAPI = {
   create: (data) => api.post('/tags', data),
   delete: (id) => api.delete(`/tags/${id}`),
 };
-
 */
 
 // ===============================
 // INDICATEUR DE MODE
 // ===============================
 
-//console.log('🎯 Mode API: PRODUCTION (services réels activés)');
-
 console.log('🎯 Mode API: MOCK (services mockés activés)');
 
 // ===============================
-// EXPORT DEFAULT
+// EXPORT DEFAULT (pour compatibilité)
 // ===============================
+
+// Pour les composants qui utilisent encore l'import par défaut
+const api = {
+  auth: mockAuthAPI,
+  products: mockProductsAPI,
+  categories: mockCategoriesAPI,
+  tags: mockTagsAPI,
+  stats: mockStatsAPI,
+  orders: mockOrdersAPI,
+  payments: mockPaymentsAPI,
+  fedapay: mockFedapayAPI,
+  freelance: mockFreelanceAPI,
+  withdrawals: mockWithdrawalsAPI,
+  admin: mockAdminAPI,
+  providers: mockProvidersAPI,
+  files: mockFilesAPI,
+  notifications: mockNotificationsAPI,
+  chat: mockChatAPI,
+  aiAssistant: mockAIAssistantAPI,
+  security: mockSecurityAPI
+};
+
 export default api;
