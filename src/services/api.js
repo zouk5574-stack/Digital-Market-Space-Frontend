@@ -16,7 +16,7 @@
 // ===============================
 // 🔄 IMPORTS MOCKS (décommentez pour utiliser les mocks)
 // ===============================
-
+/*
 import {
   mockAuthAPI, mockProductsAPI, mockCategoriesAPI, mockTagsAPI,
   mockStatsAPI, mockOrdersAPI, mockPaymentsAPI, mockFedapayAPI,
@@ -24,12 +24,12 @@ import {
   mockFilesAPI, mockNotificationsAPI, mockChatAPI, mockAIAssistantAPI,
   mockSecurityAPI
 } from './mockApiService';
-
+*/
 // ===============================
 // 🔄 IMPORTS RÉELS (décommentez pour utiliser le backend réel)
 // ===============================
 
-/*
+
 import axios from 'axios';
 
 // ===============================
@@ -90,7 +90,7 @@ api.interceptors.response.use(
     return Promise.reject(err);
   }
 );
-*/
+
 
 // ===============================
 // ✅ EXPORTS MOCKS (décommentez pour utiliser les mocks)
@@ -118,7 +118,7 @@ export const securityAPI = mockSecurityAPI;
 // ✅ EXPORTS RÉELS (décommentez pour utiliser le backend réel)
 // ===============================
 
-/*
+
 // AUTHENTIFICATION
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
@@ -307,18 +307,18 @@ export const tagsAPI = {
   create: (data) => api.post('/tags', data),
   delete: (id) => api.delete(`/tags/${id}`),
 };
-*/
+
 
 // ===============================
 // INDICATEUR DE MODE
 // ===============================
 
-console.log('🎯 Mode API: MOCK (services mockés activés)');
+//console.log('🎯 Mode API: MOCK (services mockés activés)');
 
 // ===============================
 // EXPORT DEFAULT (pour compatibilité)
 // ===============================
-
+/*
 // Pour les composants qui utilisent encore l'import par défaut
 const api = {
   auth: mockAuthAPI,
@@ -339,5 +339,5 @@ const api = {
   aiAssistant: mockAIAssistantAPI,
   security: mockSecurityAPI
 };
-
+*/
 export default api;
