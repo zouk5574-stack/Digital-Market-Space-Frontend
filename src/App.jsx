@@ -3,6 +3,16 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuthContext } from './contexts/AuthContext';
 
+
+import {
+  mockAuthAPI, mockProductsAPI, mockCategoriesAPI, mockTagsAPI,
+  mockStatsAPI, mockOrdersAPI, mockPaymentsAPI, mockFedapayAPI,
+  mockFreelanceAPI, mockWithdrawalsAPI, mockAdminAPI, mockProvidersAPI,
+  mockFilesAPI, mockNotificationsAPI, mockChatAPI, mockAIAssistantAPI,
+  mockSecurityAPI
+} from './services/mockApiService';
+
+
 // ✅ STYLE GLOBAL - IMPORT PRINCIPAL
 import './styles/Global.css';
 
